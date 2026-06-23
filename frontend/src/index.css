@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @source "./";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -13,8 +15,6 @@ html, body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #09090b;
-  color: #f4f4f5;
   scroll-behavior: smooth;
 }
 

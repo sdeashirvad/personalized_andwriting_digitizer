@@ -6,15 +6,21 @@ import { useEffect } from 'react'
 export default function App() {
   useEffect(() => {
     const theme = localStorage.getItem('acd_theme')
-    if (theme !== 'light') {
+    if (theme === 'light') {
+      document.documentElement.classList.remove('dark')
+      document.documentElement.style.backgroundColor = '#ffffff'
+      document.body.style.backgroundColor = '#ffffff'
+    } else {
       document.documentElement.classList.add('dark')
+      document.documentElement.style.backgroundColor = '#09090b'
+      document.body.style.backgroundColor = '#09090b'
     }
   }, [])
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#09090b', color: '#f4f4f5', display: 'flex', flexDirection: 'column', width: '100%' }}>
+    <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col w-full transition-colors duration-200">
       <Header />
-      <main style={{ flex: 1, width: '100%' }}>
+      <main className="flex-1 w-full">
         <Routes>
           <Route path="/" element={<Home />} />
         </Routes>
