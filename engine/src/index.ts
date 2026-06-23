@@ -1,12 +1,29 @@
+// ─── Core diff engine ─────────────────────────────────────────────────────────
 export { compareContracts } from './compare/contracts.js'
 export { parseContract } from './parsers/openapi.js'
-export { toJSON } from './reporters/json.js'
-export { toMarkdown } from './reporters/markdown.js'
-export { toConsole } from './reporters/console.js'
+
+// ─── Report pipeline (canonical) ──────────────────────────────────────────────
+export { generateReport } from './report/ReportGenerator.js'
+export { REPORT_VERSION, TOOL_VERSION, SUPPORTED_REPORT_VERSIONS, isVersionSupported } from './report/ReportVersion.js'
+export { ExitCode, determineExitCode, EXIT_CODE_DOCS } from './report/ExitCodes.js'
+
+// ─── Renderers (all accept ContractDiffReport) ────────────────────────────────
+export { toJSONReport, toJSON } from './reporters/json.js'
+export { toMarkdownReport, toMarkdown } from './reporters/markdown.js'
+export { toConsoleReport, toConsole } from './reporters/console.js'
 export { toHTML } from './reporters/html.js'
+
+// ─── PR / GitHub Action ───────────────────────────────────────────────────────
+export { generatePRComment, getPRCommentMarker } from './github-action/PRCommentRenderer.js'
+
+// ─── Rules ────────────────────────────────────────────────────────────────────
 export { RULE_MAP } from './rules/severity.js'
 export { calculateRiskScore, getRiskCategory, RISK_WEIGHTS } from './rules/risk.js'
+
+// ─── Impact analysis ──────────────────────────────────────────────────────────
 export { generateImpactReports, generateImpactReport } from './reporters/impact.js'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 export type {
   OpenAPIContract,
   DiffResult,
@@ -21,3 +38,5 @@ export type {
 } from './models/types.js'
 export type { RiskScore, RiskCategory, RiskBreakdownItem } from './rules/risk.js'
 export type { ImpactReport } from './reporters/impact.js'
+export type { ContractDiffReport } from './report/ContractDiffReport.js'
+export type { ExitCodeValue, ExitCodeOptions } from './report/ExitCodes.js'

@@ -1,0 +1,282 @@
+PHASE 3 — CONTRACT REPORT STANDARDIZATION & CI FOUNDATION
+
+IMPORTANT
+
+Do NOT work on UI enhancements.
+Do NOT work on WebView mode.
+Do NOT redesign the dashboard.
+
+Focus exclusively on turning API Contract Diff into a production-grade developer tool.
+
+==================================================
+PRIMARY GOAL
+============
+
+Introduce a canonical report model that becomes the single source of truth for:
+
+* CLI output
+* HTML reports
+* Dashboard rendering
+* Future GitHub Action
+* Future PR comments
+* Future integrations
+
+Everything should be generated from the same report object.
+
+==================================================
+STEP 1 — CONTRACT DIFF REPORT MODEL
+===================================
+
+Create a versioned report contract.
+
+Example:
+
+{
+"reportVersion": "1.0",
+"generatedAt": "2026-06-24T12:00:00Z",
+"toolVersion": "0.1.0",
+"riskScore": 85,
+"riskLevel": "HIGH",
+"summary": {},
+"changes": [],
+"impacts": []
+}
+
+Create TypeScript models/interfaces.
+
+Suggested structure:
+
+src/
+report/
+ContractDiffReport.ts
+ReportGenerator.ts
+ReportVersion.ts
+
+All output paths must use this model.
+
+==================================================
+STEP 2 — JSON REPORT EXPORT
+===========================
+
+Add support:
+
+--json
+
+Examples:
+
+npx api-contract-diff old.yaml new.yaml --json
+
+Output:
+
+Structured JSON report.
+
+Support:
+
+--output report.json
+
+Requirements:
+
+* Stable schema
+* Machine readable
+* Future compatible
+
+==================================================
+STEP 3 — EXIT CODE POLICY
+=========================
+
+Implement deterministic exit codes.
+
+Example:
+
+0 = No breaking changes
+
+1 = Medium severity detected
+
+2 = High/Critical severity detected
+
+3 = Invalid contract
+
+4 = Internal execution error
+
+Document behavior.
+
+Add tests.
+
+==================================================
+STEP 4 — REPORT GENERATION PIPELINE
+===================================
+
+Refactor architecture.
+
+Current flow:
+
+Contracts
+↓
+Diff Engine
+↓
+UI / CLI
+
+Target flow:
+
+Contracts
+↓
+Diff Engine
+↓
+ContractDiffReport
+↓
+CLI Renderer
+
+HTML Renderer
+
+Dashboard Renderer
+
+Future GitHub Renderer
+
+Future PR Renderer
+
+The report object becomes the only source of truth.
+
+==================================================
+STEP 5 — JSON REPORT TEST SUITE
+===============================
+
+Add tests for:
+
+* report schema generation
+* risk score serialization
+* summary generation
+* impact generation
+* versioning metadata
+* backward compatibility checks
+
+==================================================
+STEP 6 — REPORT VERSIONING STRATEGY
+===================================
+
+Introduce:
+
+reportVersion
+
+toolVersion
+
+Create:
+
+docs/report-versioning.md
+
+Document:
+
+How future schema changes should be handled.
+
+Version compatibility rules.
+
+Migration expectations.
+
+==================================================
+STEP 7 — CLI MATURITY
+=====================
+
+Improve CLI UX.
+
+Add:
+
+--json
+
+--output
+
+--fail-on-high
+
+--fail-on-medium
+
+--version
+
+--help
+
+Examples should be included in README.
+
+Output should be human-friendly.
+
+==================================================
+STEP 8 — RELEASE PREPARATION
+============================
+
+Add:
+
+release-checklist.md
+
+Include:
+
+Build
+
+Tests
+
+Package validation
+
+npm pack validation
+
+Version bump process
+
+Release notes process
+
+==================================================
+STEP 9 — PREPARE GITHUB ACTION IMPLEMENTATION
+=============================================
+
+Create implementation-ready design.
+
+NOT documentation only.
+
+Create:
+
+src/github-action/
+
+Define:
+
+Action inputs
+
+Action outputs
+
+Failure conditions
+
+Report consumption strategy
+
+PR comment generation strategy
+
+Use ContractDiffReport as the integration format.
+
+No actual Action implementation yet.
+
+==================================================
+MANDATORY VALIDATION
+====================
+
+Before stopping:
+
+Run:
+
+npm install
+
+npm test
+
+npm run build
+
+Generate sample report.json
+
+Verify:
+
+* reportVersion present
+* toolVersion present
+* risk score present
+* summary generated
+* impacts generated
+
+Confirm all tests pass.
+
+Provide:
+
+1. files created
+2. files modified
+3. report schema example
+4. CLI examples
+5. validation results
+
+Do not stop if builds or tests fail.

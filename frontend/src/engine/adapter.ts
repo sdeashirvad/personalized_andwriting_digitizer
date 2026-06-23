@@ -1,21 +1,24 @@
 import { load as yamlLoad } from 'js-yaml'
 import {
   compareContracts,
-  calculateRiskScore,
-  generateImpactReports,
+  generateReport,
+  toJSONReport,
+  determineExitCode,
 } from '@api-contract-diff/engine'
 import type {
-  DiffResult,
   OpenAPIContract,
+  ContractDiffReport,
   RiskScore,
   ImpactReport,
+  RiskBreakdownItem,
 } from '@api-contract-diff/engine'
+import { TOOL_VERSION } from '@api-contract-diff/engine'
 
-export type { RiskScore, ImpactReport }
+export type { ContractDiffReport, RiskScore, ImpactReport, RiskBreakdownItem }
 
 export type EngineMode = 'local' | 'global'
 export const ENGINE_MODE: EngineMode = 'local'
-export const ENGINE_VERSION = '1.1.0'
+export const ENGINE_VERSION = TOOL_VERSION
 
 export interface RunDiffOptions {
   oldContract: string
@@ -23,7 +26,9 @@ export interface RunDiffOptions {
 }
 
 export interface RunDiffResult {
-  result: DiffResult
+  report: ContractDiffReport
+  /** Convenience aliases retained for existing component compatibility */
+  result: { summary: ContractDiffReport['summary']; changes: ContractDiffReport['changes']; metadata: ContractDiffReport['metadata'] }
   riskScore: RiskScore
   impactReports: ImpactReport[]
   engineMode: EngineMode
@@ -56,15 +61,34 @@ export function runDiff(options: RunDiffOptions): RunDiffResult {
     throw new Error('Global engine not yet configured.')
   }
   const t0 = performance.now()
+
   const oldSpec = parseContractText(options.oldContract)
   const newSpec = parseContractText(options.newContract)
-  const result = compareContracts(oldSpec, newSpec)
-  const riskScore = calculateRiskScore(result.changes)
-  const impactReports = generateImpactReports(result.changes)
+
+  const diffResult = compareContracts(oldSpec, newSpec)
+
+  // generateReport is now the canonical pipeline step
+  const report = generateReport(diffResult)
+
+  // Compatibility shims for existing components
+  const riskScore: RiskScore = {
+    score: report.riskScore,
+    category: report.riskLevel,
+    breakdown: report.riskBreakdown,
+    topContributors: report.changes
+      .filter(c => c.breaking)
+      .slice(0, 5),
+  }
+
   return {
-    result,
+    report,
+    result: {
+      summary: report.summary,
+      changes: report.changes,
+      metadata: report.metadata,
+    },
     riskScore,
-    impactReports,
+    impactReports: report.impacts,
     engineMode: ENGINE_MODE,
     engineVersion: ENGINE_VERSION,
     durationMs: Math.round(performance.now() - t0),
@@ -72,7 +96,8 @@ export function runDiff(options: RunDiffOptions): RunDiffResult {
 }
 
 export function generateHTMLReport(diffResult: RunDiffResult): string {
-  const { result, riskScore, impactReports } = diffResult
+  const { report } = diffResult
+  const exitCode = determineExitCode(report)
 
   const riskColor: Record<string, string> = {
     NONE: '#10b981', LOW: '#3b82f6', MEDIUM: '#f59e0b', HIGH: '#ef4444', CRITICAL: '#7c3aed',
@@ -81,11 +106,11 @@ export function generateHTMLReport(diffResult: RunDiffResult): string {
     HIGH: '#ef4444', MEDIUM: '#f59e0b', LOW: '#3b82f6', INFO: '#71717a',
   }
 
-  const breakingChanges = result.changes.filter(c => c.breaking)
-  const nonBreakingChanges = result.changes.filter(c => !c.breaking)
-  const breakingImpacts = impactReports.filter(r => r.change.breaking)
+  const breakingChanges  = report.changes.filter(c => c.breaking)
+  const nonBreakingChanges = report.changes.filter(c => !c.breaking)
+  const breakingImpacts  = report.impacts.filter(r => r.change.breaking)
 
-  function changeRow(c: (typeof result.changes)[0]): string {
+  function changeRow(c: (typeof report.changes)[0]): string {
     return `<tr>
       <td><span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;background:${sevColor[c.severity]}22;color:${sevColor[c.severity]};border:1px solid ${sevColor[c.severity]}44">${c.severity}</span></td>
       <td style="font-family:monospace;font-size:12px">${c.method ? `<strong>${c.method.toUpperCase()}</strong> ` : ''}${c.path}</td>
@@ -106,12 +131,14 @@ export function generateHTMLReport(diffResult: RunDiffResult): string {
     </div>`
   }
 
+  const exitLabel = ['OK', 'MEDIUM BREAKING', 'HIGH BREAKING', 'INVALID CONTRACT', 'INTERNAL ERROR']
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>API Contract Diff Report — ${result.metadata.oldTitle}</title>
+<title>API Contract Diff Report — ${report.metadata.oldTitle}</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#09090b;color:#e4e4e7;line-height:1.6}
@@ -141,6 +168,7 @@ tr:hover td{background:#1f1f23}
 .bdwn-row:last-child{border-bottom:none}
 .bar{flex:1;height:4px;background:#27272a;border-radius:2px;overflow:hidden}
 .bar-fill{height:100%;background:#6366f1;border-radius:2px}
+.exit-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;background:#27272a;color:#a1a1aa;border:1px solid #3f3f46;font-family:monospace}
 footer{text-align:center;color:#52525b;font-size:12px;padding:32px 0 0;border-top:1px solid #27272a;margin-top:40px}
 @media(max-width:600px){.cards{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -150,32 +178,37 @@ footer{text-align:center;color:#52525b;font-size:12px;padding:32px 0 0;border-to
   <div class="logo">⚡</div>
   <div>
     <h1>API Contract Diff Report</h1>
-    <div class="meta">${result.metadata.oldTitle} v${result.metadata.oldVersion} → v${result.metadata.newVersion} · ${result.metadata.timestamp.slice(0,19).replace('T',' ')} UTC</div>
+    <div class="meta">${report.metadata.oldTitle} v${report.metadata.oldVersion} → v${report.metadata.newVersion} · ${report.generatedAt.slice(0,19).replace('T',' ')} UTC · Schema v${report.reportVersion}</div>
   </div>
 </header>
 <div class="cards">
-  <div class="card"><div class="card-label">Total Changes</div><div class="card-value" style="color:#f4f4f5">${result.summary.total}</div><div class="card-sub">${result.summary.total} detected</div></div>
-  <div class="card"><div class="card-label">Breaking</div><div class="card-value" style="color:${result.summary.breaking>0?'#ef4444':'#f4f4f5'}">${result.summary.breaking}</div><div class="card-sub">${result.summary.breaking>0?'Need attention':'All clear'}</div></div>
-  <div class="card"><div class="card-label">Non-Breaking</div><div class="card-value" style="color:${result.summary.nonBreaking>0?'#10b981':'#f4f4f5'}">${result.summary.nonBreaking}</div><div class="card-sub">${result.summary.nonBreaking>0?'Safe to ship':'None'}</div></div>
-  <div class="card"><div class="card-label">Risk Score</div><div class="card-value" style="color:${riskColor[riskScore.category]}">${riskScore.score}</div><div class="card-sub">${riskScore.category}</div></div>
+  <div class="card"><div class="card-label">Total Changes</div><div class="card-value" style="color:#f4f4f5">${report.summary.total}</div><div class="card-sub">${report.summary.total} detected</div></div>
+  <div class="card"><div class="card-label">Breaking</div><div class="card-value" style="color:${report.summary.breaking>0?'#ef4444':'#f4f4f5'}">${report.summary.breaking}</div><div class="card-sub">${report.summary.breaking>0?'Need attention':'All clear'}</div></div>
+  <div class="card"><div class="card-label">Non-Breaking</div><div class="card-value" style="color:${report.summary.nonBreaking>0?'#10b981':'#f4f4f5'}">${report.summary.nonBreaking}</div><div class="card-sub">${report.summary.nonBreaking>0?'Safe to ship':'None'}</div></div>
+  <div class="card"><div class="card-label">Risk Score</div><div class="card-value" style="color:${riskColor[report.riskLevel]}">${report.riskScore}</div><div class="card-sub">${report.riskLevel}</div></div>
 </div>
 <div class="section" style="margin-bottom:24px">
-  <div class="sec-hdr"><h2>Risk Analysis</h2></div>
+  <div class="sec-hdr"><h2>Risk Analysis</h2><span class="exit-badge">exit ${exitCode} — ${exitLabel[exitCode]}</span></div>
   <div class="risk-score">
-    <div class="risk-num" style="color:${riskColor[riskScore.category]}">${riskScore.score}</div>
+    <div class="risk-num" style="color:${riskColor[report.riskLevel]}">${report.riskScore}</div>
     <div>
-      <div style="font-size:18px;font-weight:700;color:${riskColor[riskScore.category]}">${riskScore.category} RISK</div>
-      <div style="font-size:12px;color:#71717a;margin-top:2px">${result.summary.bySeverity.HIGH}H · ${result.summary.bySeverity.MEDIUM}M · ${result.summary.bySeverity.LOW}L</div>
+      <div style="font-size:18px;font-weight:700;color:${riskColor[report.riskLevel]}">${report.riskLevel} RISK</div>
+      <div style="font-size:12px;color:#71717a;margin-top:2px">${report.summary.bySeverity.HIGH}H · ${report.summary.bySeverity.MEDIUM}M · ${report.summary.bySeverity.LOW}L</div>
     </div>
   </div>
-  ${riskScore.breakdown.length > 0 ? `<div class="bdwn">${riskScore.breakdown.map((b: {label:string;count:number;weight:number;contribution:number}) => {
-    const pct = Math.min(100, Math.round((b.contribution / riskScore.score) * 100))
+  ${report.riskBreakdown.length > 0 ? `<div class="bdwn">${report.riskBreakdown.map((b: RiskBreakdownItem) => {
+    const pct = Math.min(100, Math.round((b.contribution / report.riskScore) * 100))
     return `<div class="bdwn-row"><span style="width:200px;color:#a1a1aa">${b.label}</span><span style="color:#71717a;width:70px">×${b.count} (w${b.weight})</span><div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div><span style="color:#f4f4f5;font-weight:600;width:32px;text-align:right">${b.contribution}</span></div>`
   }).join('')}</div>` : ''}
 </div>
 ${breakingChanges.length > 0 ? `<div class="section"><div class="sec-hdr"><h2 style="color:#ef4444">Breaking Changes</h2><span class="count">${breakingChanges.length}</span></div><table><thead><tr><th>Severity</th><th>Endpoint</th><th>Description</th><th>Old</th><th>New</th></tr></thead><tbody>${breakingChanges.map(changeRow).join('')}</tbody></table></div>` : ''}
 ${nonBreakingChanges.length > 0 ? `<div class="section"><div class="sec-hdr"><h2 style="color:#10b981">Non-Breaking Changes</h2><span class="count">${nonBreakingChanges.length}</span></div><table><thead><tr><th>Severity</th><th>Endpoint</th><th>Description</th><th>Old</th><th>New</th></tr></thead><tbody>${nonBreakingChanges.map(changeRow).join('')}</tbody></table></div>` : ''}
 ${breakingImpacts.length > 0 ? `<div class="section"><div class="sec-hdr"><h2>Consumer Impact Analysis</h2><span class="count">${breakingImpacts.length} affected</span></div>${breakingImpacts.map(impactBlock).join('')}</div>` : ''}
-<footer><p>Generated by API Contract Diff Engine v${ENGINE_VERSION}</p></footer>
+<div class="section"><div class="sec-hdr"><h2>Machine-Readable Report</h2></div><div style="padding:16px 20px"><p style="font-size:12px;color:#71717a;margin-bottom:12px">ContractDiffReport schema v${report.reportVersion} — stable, versioned, machine-readable JSON.</p><pre style="font-size:10px;color:#a1a1aa;background:#09090b;padding:16px;border-radius:6px;overflow:auto;max-height:200px">${JSON.stringify({reportVersion:report.reportVersion,toolVersion:report.toolVersion,generatedAt:report.generatedAt,riskScore:report.riskScore,riskLevel:report.riskLevel,summary:report.summary}, null, 2)}</pre></div></div>
+<footer><p>Generated by API Contract Diff Engine v${report.toolVersion} · Report schema v${report.reportVersion} · <a href="https://github.com/your-org/api-contract-diff" style="color:#6366f1">github.com/your-org/api-contract-diff</a></p></footer>
 </div></body></html>`
+}
+
+export function generateJSONReport(diffResult: RunDiffResult): string {
+  return toJSONReport(diffResult.report)
 }
