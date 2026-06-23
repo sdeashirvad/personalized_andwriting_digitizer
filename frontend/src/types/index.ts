@@ -6,6 +6,12 @@ export type DocumentStatus =
   | 'EXPORTED'
   | 'FAILED'
 
+export interface User {
+  id: string
+  username: string
+  createdAt: string
+}
+
 export interface Document {
   id: string
   userId: string
@@ -61,6 +67,13 @@ export interface ExportFile {
   fileType: 'TXT' | 'PDF' | 'MD'
   filePath: string
   createdAt: string
+}
+
+export interface DashboardStats {
+  documentsUploaded: number
+  pagesProcessed: number
+  correctionsLearned: number
+  documentsExported: number
 }
 
 export interface ApiError {

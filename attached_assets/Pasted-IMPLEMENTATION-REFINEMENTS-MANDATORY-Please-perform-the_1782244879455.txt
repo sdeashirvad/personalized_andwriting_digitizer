@@ -1,0 +1,386 @@
+IMPLEMENTATION REFINEMENTS (MANDATORY)
+
+Please perform the following enhancements on top of the existing implementation.
+
+==================================================
+
+1. DEPLOYMENT READY DOCKERIZATION
+   ==================================================
+
+Goal:
+
+A single deployment should expose the frontend application while also serving backend APIs.
+
+Target platform:
+
+* Railway
+* Oracle VM
+* Docker environments
+
+Requirements:
+
+1. Add production-ready Dockerfiles.
+
+2. Add multi-stage builds wherever appropriate.
+
+3. Frontend build should be generated during Docker build.
+
+4. Frontend static assets should be served through Spring Boot in production.
+
+5. Final deployment should require only:
+
+docker build
+
+docker run
+
+OR
+
+Railway deployment.
+
+6. Minimize image size.
+
+7. Add health check endpoint.
+
+Endpoint:
+
+GET /actuator/health
+
+8. Add production environment variable support.
+
+Examples:
+
+DATABASE_URL
+
+DATABASE_USERNAME
+
+DATABASE_PASSWORD
+
+OCR_SERVICE_URL
+
+STORAGE_PATH
+
+SERVER_PORT
+
+9. Ensure uploaded files persist via mounted volume.
+
+Example:
+
+/app/storage
+
+==================================================
+2. DATABASE FALLBACK STRATEGY
+=============================
+
+Goal:
+
+Application should run locally without requiring PostgreSQL.
+
+Requirements:
+
+Primary Database
+
+* PostgreSQL
+
+Fallback Database
+
+* SQLite
+
+Behavior:
+
+If PostgreSQL configuration is present:
+
+Use PostgreSQL.
+
+Otherwise:
+
+Automatically fallback to SQLite.
+
+Implement:
+
+application-postgres.yml
+
+application-sqlite.yml
+
+Provide profile switching.
+
+Examples:
+
+SPRING_PROFILES_ACTIVE=postgres
+
+SPRING_PROFILES_ACTIVE=sqlite
+
+Default local startup should use SQLite.
+
+Railway deployment should use PostgreSQL.
+
+Add migrations support.
+
+Preferred:
+
+Flyway
+
+Database schema must remain compatible across both engines.
+
+==================================================
+3. README OVERHAUL
+==================
+
+Create a professional README.md.
+
+Include:
+
+Project Overview
+
+Features
+
+Architecture
+
+Tech Stack
+
+Folder Structure
+
+Screenshots placeholders
+
+Local Setup
+
+Docker Setup
+
+Railway Deployment
+
+Oracle VM Deployment
+
+Database Configuration
+
+OCR Service Setup
+
+Environment Variables
+
+Troubleshooting
+
+Future Roadmap
+
+Architecture Diagram
+
+Sequence Diagram
+
+Correction Memory Flow
+
+Add a dedicated section:
+
+Using PostgreSQL
+
+How to create database
+
+How to configure connection
+
+Required environment variables
+
+Add another section:
+
+Running without PostgreSQL
+
+Uses SQLite automatically
+
+Zero-configuration startup
+
+README should allow a new developer to start the project in less than 10 minutes.
+
+==================================================
+4. ENTERPRISE-GRADE UX REDESIGN
+===============================
+
+Current UI should be redesigned.
+
+Goal:
+
+Modern SaaS product experience.
+
+Think:
+
+Linear
+
+Notion
+
+Vercel
+
+Stripe Dashboard
+
+GitHub
+
+Principles:
+
+Clean
+
+Minimal
+
+Professional
+
+Fast
+
+Mobile Responsive
+
+Accessibility Friendly
+
+Requirements:
+
+Responsive Design
+
+Desktop
+
+Tablet
+
+Mobile
+
+Dark Mode
+
+Light Mode
+
+Modern typography
+
+Proper spacing system
+
+Loading states
+
+Skeleton loaders
+
+Empty states
+
+Error states
+
+Success notifications
+
+Keyboard navigation
+
+Consistent design system
+
+Review screen should feel premium.
+
+Review Page Layout:
+
+Desktop
+
+---
+
+## | Original Page | OCR Editor |
+
+Mobile
+
+---
+
+## Original Page
+
+---
+
+## OCR Editor
+
+Low confidence words should be:
+
+Highlighted
+
+Clickable
+
+Easy to review
+
+Add progress indicators:
+
+Pages Reviewed
+
+Corrections Made
+
+Confidence Improvement
+
+Add dashboard homepage.
+
+Dashboard Cards:
+
+Documents Uploaded
+
+Pages Processed
+
+Corrections Learned
+
+Exported Documents
+
+Recent Activity
+
+==================================================
+5. USER ONBOARDING
+==================
+
+Application should support user identities.
+
+No authentication required in V1.
+
+Requirements:
+
+First visit:
+
+Prompt user for unique username.
+
+Store locally in browser.
+
+Persist across sessions.
+
+Usernames must be unique in database.
+
+Entity:
+
+User
+
+Fields:
+
+id
+
+username
+
+createdAt
+
+Rules:
+
+Username required before document upload.
+
+Username uniqueness enforced.
+
+All documents belong to a user.
+
+All correction memories belong to a user.
+
+Display username in application header.
+
+Allow changing username from settings page.
+
+==================================================
+6. PORTFOLIO-QUALITY ENGINEERING
+================================
+
+This project is intended as a portfolio project.
+
+Optimize implementation for:
+
+Maintainability
+
+Architecture quality
+
+Code readability
+
+Interview discussion value
+
+Demonstrate:
+
+Document processing
+
+OCR workflows
+
+Human-in-the-loop systems
+
+Adaptive correction memory
+
+Full-stack engineering
+
+Avoid over-engineering.
+
+Avoid premature microservices.
+
+Avoid unnecessary AI complexity.
+
+Prioritize production-quality software engineering practices.

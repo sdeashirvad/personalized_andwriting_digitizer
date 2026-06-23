@@ -4,7 +4,7 @@ async function initSchema() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id VARCHAR(255) PRIMARY KEY,
-      username VARCHAR(255) NOT NULL,
+      username VARCHAR(255) NOT NULL UNIQUE,
       created_at TIMESTAMP DEFAULT NOW()
     );
 
@@ -26,7 +26,7 @@ async function initSchema() {
 
     CREATE TABLE IF NOT EXISTS ocr_results (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      page_id UUID NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+      page_id UUID NOT NULL UNIQUE REFERENCES pages(id) ON DELETE CASCADE,
       raw_text TEXT NOT NULL DEFAULT '',
       confidence FLOAT NOT NULL DEFAULT 0,
       words_json JSONB NOT NULL DEFAULT '[]'
@@ -49,9 +49,6 @@ async function initSchema() {
       file_path VARCHAR(1000) NOT NULL,
       created_at TIMESTAMP DEFAULT NOW()
     );
-
-    INSERT INTO users (id, username) VALUES ('user-1', 'Default User')
-      ON CONFLICT (id) DO NOTHING;
   `)
   console.log('Database schema initialized')
 }

@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    ports:
+      - "${SERVER_PORT:-3001}:${SERVER_PORT:-3001}"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - OCR_SERVICE_URL=http://localhost:8000
+      - STORAGE_PATH=/app/storage
+      - SERVER_PORT=${SERVER_PORT:-3001}
+      - NODE_ENV=production
+    volumes:
+      - storage_data:/app/storage
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=${PGDATABASE:-handwriting_digitizer}
+      - POSTGRES_USER=${PGUSER:-hd_user}
+      - POSTGRES_PASSWORD=${PGPASSWORD:-hd_pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-hd_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  storage_data:
+  postgres_data:
