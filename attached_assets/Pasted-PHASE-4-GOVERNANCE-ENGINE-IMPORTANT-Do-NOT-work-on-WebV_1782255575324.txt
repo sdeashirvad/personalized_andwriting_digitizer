@@ -1,0 +1,376 @@
+PHASE 4 — GOVERNANCE ENGINE
+
+IMPORTANT
+
+Do NOT work on WebView.
+Do NOT work on GitHub Action implementation.
+Do NOT redesign UI.
+
+Focus on API Change Governance.
+
+The goal is to move beyond:
+
+"Breaking change detected"
+
+and toward:
+
+"Breaking change detected, evaluated, approved, governed, and tracked."
+
+==================================================
+PRIMARY GOAL
+============
+
+Introduce governance support through:
+
+specguard.yml
+
+approved changes
+
+suppression rules
+
+expiration dates
+
+ownership metadata
+
+All governance decisions must be reflected in the canonical ContractDiffReport.
+
+==================================================
+STEP 1 — SPECGUARD CONFIG MODEL
+===============================
+
+Create:
+
+specguard.yml
+
+Example:
+
+approvedChanges:
+
+* type: endpointRemoved
+  path: "/legacy/users"
+  owner: "platform-team"
+  approvedBy: "architecture-board"
+  reason: "Migrated to v2 API"
+  expires: "2027-01-01"
+
+suppressions:
+
+* rule: ENDPOINT_ADDED
+
+* rule: FIELD_ADDED
+
+Implement:
+
+SpecGuardConfig
+
+ApprovedChange
+
+SuppressionRule
+
+ConfigurationLoader
+
+Validation
+
+==================================================
+STEP 2 — CONFIG LOADING
+=======================
+
+CLI should support:
+
+Default:
+
+./specguard.yml
+
+Override:
+
+--config ./custom-specguard.yml
+
+Behavior:
+
+If file exists:
+
+Load governance rules.
+
+If file absent:
+
+Continue normally.
+
+No failures.
+
+==================================================
+STEP 3 — APPROVED CHANGES ENGINE
+================================
+
+Implement matching logic.
+
+Examples:
+
+endpointRemoved
+
+fieldRemoved
+
+typeChanged
+
+requiredAdded
+
+enumRemoved
+
+When a change matches an approved entry:
+
+Mark as:
+
+APPROVED
+
+Do NOT remove it from report.
+
+Instead:
+
+Track governance status.
+
+==================================================
+STEP 4 — EXPIRATION SUPPORT
+===========================
+
+Implement:
+
+expires
+
+Behavior:
+
+If approval expired:
+
+Approval ignored.
+
+Report violation.
+
+Example:
+
+Expired Approval
+
+endpointRemoved
+
+/legacy/users
+
+Expired:
+2026-05-01
+
+==================================================
+STEP 5 — OWNERSHIP METADATA
+===========================
+
+Support:
+
+owner
+
+approvedBy
+
+reason
+
+createdAt (optional)
+
+Display ownership information in:
+
+JSON reports
+
+HTML reports
+
+Dashboard
+
+Future GitHub reports
+
+==================================================
+STEP 6 — SUPPRESSION ENGINE
+===========================
+
+Implement:
+
+rule suppressions
+
+Examples:
+
+ENDPOINT_ADDED
+
+FIELD_ADDED
+
+INFO findings
+
+Suppressed findings:
+
+Remain counted internally
+
+Hidden from standard reports
+
+Visible in governance section
+
+Track suppression count.
+
+==================================================
+STEP 7 — REPORT MODEL EXTENSIONS
+================================
+
+Extend ContractDiffReport.
+
+Add:
+
+governance
+
+Example:
+
+{
+"governance": {
+"approved": 3,
+"expired": 1,
+"suppressed": 4,
+"unapprovedBreaking": 2
+}
+}
+
+Each change should include:
+
+governanceStatus
+
+Example:
+
+APPROVED
+
+SUPPRESSED
+
+EXPIRED
+
+UNAPPROVED
+
+==================================================
+STEP 8 — DASHBOARD GOVERNANCE VIEW
+==================================
+
+Add Governance section.
+
+Display:
+
+Approved Changes
+
+Expired Approvals
+
+Suppressed Findings
+
+Unapproved Breaking Changes
+
+Ownership Metadata
+
+Reason Metadata
+
+The dashboard should help users understand:
+
+What changed?
+
+Who approved it?
+
+Why was it approved?
+
+Is approval still valid?
+
+==================================================
+STEP 9 — CLI GOVERNANCE OUTPUT
+==============================
+
+Human output should include:
+
+Governance Summary
+
+Example:
+
+Approved Changes: 3
+
+Expired Approvals: 1
+
+Suppressed Findings: 4
+
+Unapproved Breaking Changes: 2
+
+==================================================
+STEP 10 — TEST COVERAGE
+=======================
+
+Add tests for:
+
+Config parsing
+
+Approval matching
+
+Expiration handling
+
+Ownership metadata
+
+Suppression rules
+
+Governance report generation
+
+Dashboard rendering data
+
+Cover realistic OpenAPI examples.
+
+==================================================
+STEP 11 — DOCUMENTATION
+=======================
+
+Create:
+
+docs/governance.md
+
+Include:
+
+specguard.yml examples
+
+approval workflow
+
+suppression workflow
+
+expiration strategy
+
+recommended enterprise usage
+
+==================================================
+MANDATORY VALIDATION
+====================
+
+Before stopping:
+
+Run:
+
+npm install
+
+npm test
+
+npm run build
+
+Verify:
+
+Config loading works
+
+Approvals work
+
+Expiration works
+
+Suppressions work
+
+Governance section appears in report
+
+Governance section appears in dashboard
+
+All tests pass
+
+Provide:
+
+Files created
+
+Files modified
+
+Governance report example
+
+specguard.yml example
+
+Test results
+
+Build results
+
+Do not stop if builds or tests fail.

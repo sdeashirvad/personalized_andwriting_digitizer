@@ -1,0 +1,25 @@
+# specguard.yml — API Change Governance Configuration
+# Documentation: engine/docs/governance.md
+#
+# This file defines approved breaking changes and suppressed findings
+# for the api-contract-diff tool.
+
+approvedChanges:
+  # Example: endpoint removed as part of a planned v2 migration
+  - type: endpointRemoved
+    path: "/products/{id}"
+    owner: "platform-team"
+    approvedBy: "architecture-board"
+    reason: "Products endpoint migrated to Catalog Service v2. See ADR-2026-04. Consumers should update to /catalog/items/{id}."
+    expires: "2027-06-01"
+    createdAt: "2026-01-15"
+
+suppressions:
+  # New endpoints are always backward-compatible — suppress from standard output
+  - rule: ENDPOINT_ADDED
+    reason: "Additive endpoints never break existing consumers"
+
+  # INFO-level findings are noise in CI — suppress from standard reports
+  # Remove this suppression if you want full visibility in development
+  # - rule: INFO
+  #   reason: "INFO findings are for local development only"

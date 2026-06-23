@@ -1,5 +1,15 @@
 export type Severity = 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO'
 
+export type GovernanceStatus = 'APPROVED' | 'SUPPRESSED' | 'EXPIRED' | 'UNAPPROVED'
+
+export interface GovernanceApprovalMetadata {
+  owner: string
+  approvedBy: string
+  reason: string
+  expires?: string
+  createdAt?: string
+}
+
 export type ChangeType =
   | 'endpoint-removed'
   | 'endpoint-added'
