@@ -1,0 +1,367 @@
+PHASE 2 IMPLEMENTATION + STABILITY PASS
+
+IMPORTANT
+
+Do NOT prioritize new features over a working product.
+
+Current issue:
+
+The frontend renders a blank/empty screen.
+
+Before implementing any roadmap items:
+
+1. Identify root cause.
+2. Fix all runtime errors.
+3. Ensure the application loads successfully.
+4. Verify the dashboard is visible.
+5. Verify sample contracts can be loaded and analyzed.
+6. Verify all routes render correctly.
+7. Verify there are no console errors.
+8. Verify production build succeeds.
+
+The project is NOT complete until these checks pass.
+
+==================================================
+STEP 1 - APPLICATION STABILIZATION
+==================================
+
+Required checks:
+
+Frontend
+
+* npm install
+* npm run dev
+* npm run build
+
+Backend/Core
+
+* npm install
+* npm run build
+* npm test
+
+Verify:
+
+* no TypeScript errors
+* no Vite build errors
+* no runtime crashes
+* no missing imports
+* no unresolved modules
+* no blank page
+
+Fix all issues before continuing.
+
+==================================================
+STEP 2 - CONTRACT PLAYGROUND MODE
+=================================
+
+Add a new mode:
+
+"Analyze Your Own Contracts"
+
+The dashboard should support:
+
+A. Sample Mode
+
+Existing demo scenarios
+
+B. Playground Mode
+
+User provides real contracts
+
+Tabs:
+
+* Sample Contracts
+* Playground
+
+Playground Features
+
+Input Area A
+
+Old Contract
+
+Input Area B
+
+New Contract
+
+Support:
+
+* Paste YAML
+* Paste JSON
+
+Optional:
+
+Upload .yaml
+Upload .yml
+Upload .json
+
+Buttons:
+
+Analyze Contracts
+
+Reset
+
+Load Example
+
+Validation:
+
+* Invalid YAML handling
+* Invalid JSON handling
+* Helpful error messages
+
+Results should use the same diff engine.
+
+==================================================
+STEP 3 - RISK SCORING ENGINE
+============================
+
+Implement roadmap phase:
+
+Risk Scoring
+
+Every detected change should have:
+
+severity
+
+weight
+
+Example weights:
+
+Endpoint Removed = 40
+
+Response Field Removed = 25
+
+Request Field Removed = 20
+
+Type Changed = 15
+
+Enum Value Removed = 10
+
+Required Added = 8
+
+Field Added = 1
+
+Calculate:
+
+overall risk score
+
+Output:
+
+LOW
+
+MEDIUM
+
+HIGH
+
+CRITICAL
+
+Dashboard should display:
+
+Risk Score Card
+
+Risk Category
+
+Risk Breakdown
+
+Top Contributors
+
+==================================================
+STEP 4 - CONSUMER IMPACT REPORTS
+================================
+
+Implement rule-based impact reports.
+
+NO AI.
+
+Example:
+
+Response field removed:
+
+customerId
+
+Generate:
+
+Potential Impact
+
+Frontend clients may fail if they depend on customerId.
+
+SDKs may require regeneration.
+
+Consumer services should be validated.
+
+Examples:
+
+Endpoint removed
+
+Field removed
+
+Type changed
+
+Required added
+
+Enum value removed
+
+Create reusable templates.
+
+Display impact analysis panel.
+
+==================================================
+STEP 5 - HTML REPORT GENERATION
+===============================
+
+Add:
+
+--report html
+
+CLI support.
+
+Generate:
+
+report.html
+
+Include:
+
+Summary
+
+Risk Score
+
+Breaking Changes
+
+Non-Breaking Changes
+
+Impact Analysis
+
+Timestamp
+
+Project Branding
+
+Output should be visually clean and readable.
+
+Add dashboard button:
+
+Export HTML Report
+
+==================================================
+STEP 6 - OSS MATURITY IMPROVEMENTS
+==================================
+
+Add:
+
+CHANGELOG.md
+
+LICENSE
+
+CONTRIBUTING.md
+
+ROADMAP.md
+
+Document:
+
+Current Version
+
+Planned Features
+
+Contribution Process
+
+Release Process
+
+==================================================
+STEP 7 - TEST COVERAGE EXPANSION
+================================
+
+Add tests for:
+
+Endpoint Removed
+
+Endpoint Added
+
+Field Removed
+
+Field Added
+
+Type Changed
+
+Required Changed
+
+Enum Removed
+
+Risk Score Calculation
+
+Consumer Impact Generation
+
+HTML Report Generation
+
+Use realistic OpenAPI examples.
+
+==================================================
+STEP 8 - PREPARE FOR GITHUB ACTION PHASE
+========================================
+
+DO NOT IMPLEMENT ACTION YET.
+
+Instead:
+
+Create:
+
+github-action-design.md
+
+Document:
+
+Inputs
+
+Outputs
+
+Exit Codes
+
+PR Comment Strategy
+
+Workflow Design
+
+Versioning Strategy
+
+Marketplace Publishing Plan
+
+==================================================
+MANDATORY PRE-STOP CHECKLIST
+============================
+
+Before stopping:
+
+Run and verify:
+
+npm install
+
+npm test
+
+npm run build
+
+Frontend starts successfully.
+
+Dashboard renders successfully.
+
+Sample mode works.
+
+Playground mode works.
+
+Risk scoring works.
+
+Impact reports work.
+
+HTML report generation works.
+
+All tests pass.
+
+If any item fails:
+
+Fix before stopping.
+
+Provide final summary containing:
+
+What was fixed
+
+What was added
+
+Commands used for validation
+
+Test results
+
+Remaining roadmap items
