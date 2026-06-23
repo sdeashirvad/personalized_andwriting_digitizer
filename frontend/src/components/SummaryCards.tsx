@@ -1,4 +1,4 @@
-import type { DiffResult } from '@engine/models/types'
+import type { DiffResult } from '@api-contract-diff/engine'
 import { AlertTriangle, CheckCircle2, Layers, ShieldAlert } from 'lucide-react'
 
 interface Props {

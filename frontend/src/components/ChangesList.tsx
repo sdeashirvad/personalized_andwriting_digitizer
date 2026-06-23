@@ -1,5 +1,5 @@
-import type { DiffChange } from '@engine/models/types'
-import { RULE_MAP } from '@engine/rules/severity'
+import type { DiffChange } from '@api-contract-diff/engine'
+import { RULE_MAP } from '@api-contract-diff/engine'
 import { SeverityBadge } from './SeverityBadge'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'

@@ -1,4 +1,4 @@
-import type { RiskScore } from '@engine/rules/risk'
+import type { RiskScore } from '@api-contract-diff/engine'
 
 interface Props {
   riskScore: RiskScore

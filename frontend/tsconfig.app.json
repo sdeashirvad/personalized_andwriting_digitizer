@@ -21,11 +21,6 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
 
-    /* Engine alias */
-    "paths": {
-      "@engine": ["../engine/src/index.ts"],
-      "@engine/*": ["../engine/src/*"]
-    }
   },
-  "include": ["src", "../engine/src"]
+  "include": ["src"]
 }

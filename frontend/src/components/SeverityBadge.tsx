@@ -1,4 +1,4 @@
-import type { Severity } from '@engine/models/types'
+import type { Severity } from '@api-contract-diff/engine'
 
 interface Props {
   severity: Severity
