@@ -35,9 +35,12 @@ async function processDocument(documentId) {
         : 0
 
       await client.query(
+        `DELETE FROM ocr_results WHERE page_id = $1`,
+        [page.id]
+      )
+      await client.query(
         `INSERT INTO ocr_results (page_id, raw_text, confidence, words_json)
-         VALUES ($1, $2, $3, $4)
-         ON CONFLICT (page_id) DO UPDATE SET raw_text=$2, confidence=$3, words_json=$4`,
+         VALUES ($1, $2, $3, $4)`,
         [page.id, ocrResult.raw_text || '', confidence, JSON.stringify(enrichedWords)]
       )
     }

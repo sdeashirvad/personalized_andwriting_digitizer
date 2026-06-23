@@ -50,6 +50,11 @@ async function initSchema() {
       created_at TIMESTAMP DEFAULT NOW()
     );
   `)
+
+  await pool.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS ocr_results_page_id_unique_idx ON ocr_results(page_id);
+  `)
+
   console.log('Database schema initialized')
 }
 
