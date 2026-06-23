@@ -1,0 +1,21 @@
+{
+  "name": "@api-contract-diff/engine",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "API Contract Diff engine — detects breaking and non-breaking changes between OpenAPI specs",
+  "main": "src/index.ts",
+  "scripts": {
+    "cli": "tsx src/cli.ts",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --testPathPattern=tests/",
+    "test:node": "tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.8.3"
+  }
+}

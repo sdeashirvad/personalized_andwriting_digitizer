@@ -1,0 +1,1 @@
+- [API Contract Diff pivot](project-pivot.md) — project fully repurposed from OCR to API diff tool; engine in /engine, frontend in /frontend, no backend server

@@ -1,51 +1,51 @@
-# Handwriting Digitizer V1
+# API Contract Diff
 
-A full-stack application that converts handwritten notebook pages into editable digital text using OCR. Features a human-in-the-loop review workflow and a personal correction profile that improves future accuracy.
+A developer tool that compares two OpenAPI/Swagger API specifications and reports breaking and non-breaking changes clearly, with severity levels.
 
 ## Architecture
 
 - **Frontend**: React + Vite + TypeScript + Tailwind CSS — port 5000
-- **Backend**: Node.js + Express — port 3001
-- **OCR Service**: Python + Flask + Tesseract — port 8000
-- **Database**: PostgreSQL (Replit built-in)
+- **Engine**: TypeScript diff library in `/engine/src/` — bundled into the frontend, also runnable as a CLI
 
 ## Project Structure
 
 ```
-/frontend      — React/Vite app
-/backend       — Express API server
-/ocr-service   — Python Flask OCR sidecar
-/storage       — Local file storage
-  /uploads     — Original uploaded files
-  /processed   — Preprocessed images
-  /exports     — Exported TXT/PDF/Markdown files
+/engine        — TypeScript diff engine (zero runtime deps in comparison logic)
+  /src         — models, parsers, rules, compare, reporters, cli
+  /tests       — test suite (Node built-in test runner via tsx)
+
+/frontend      — React + Vite demo dashboard
+  /src/engine  — adapter layer (local vs future global package)
+  /src/data    — bundled sample contract pairs (3 scenarios)
+  /src/components — Header, SummaryCards, ChangesList, ScenarioPicker, ContractPreview
+  /src/pages   — Home page
 ```
 
 ## Running the App
 
-Three workflows run concurrently:
+One workflow runs:
 1. **Start application** — `cd frontend && npm run dev` (port 5000, webview)
-2. **Backend API** — `cd backend && node src/server.js` (port 3001, console)
-3. **OCR Service** — `cd ocr-service && python app.py` (port 8000, console)
+
+The Backend API and OCR Service workflows are legacy from the previous project — they can be stopped.
 
 ## Core User Flow
 
-1. User uploads a handwritten image
-2. Backend stores file, OCR service processes it
-3. Words are extracted with confidence scores
-4. User reviews highlighted low-confidence words and corrects them
-5. Corrections are persisted to the personal correction profile
-6. Future uploads auto-suggest corrections from the profile
-7. User exports the final document as TXT, PDF, or Markdown
+1. Dashboard loads with the "Breaking Removal" scenario pre-selected
+2. Diff engine runs synchronously in the browser (no server needed)
+3. User sees summary cards: total, breaking, non-breaking, risk level
+4. User sees detailed change cards with severity badges and descriptions
+5. User can switch between 3 sample scenarios and re-run analysis
+6. User can expand the Contract Preview to see the raw YAML side by side
 
-## Confidence Levels
+## Engine Adapter
 
-- **High** (≥90%): no review needed
-- **Medium** (70–89%): shown for review
-- **Low** (<70%): highlighted in red, requires correction
+`frontend/src/engine/adapter.ts` abstracts the engine source:
+- `ENGINE_MODE = 'local'` — uses the bundled TypeScript engine (current)
+- `ENGINE_MODE = 'global'` — future: swap to a published npm package
 
 ## User Preferences
 
-- Keep all three services running in separate workflows
-- Backend always on localhost (not 0.0.0.0); frontend on 0.0.0.0
-- OCR sidecar on port 8000
+- Only one workflow needed: "Start application" on port 5000
+- Frontend always on 0.0.0.0 (Replit proxy requirement)
+- Dark mode by default, toggleable; stored in `localStorage.acd_theme`
+- No backend server needed — the diff engine runs fully client-side

@@ -1,0 +1,201 @@
+PROJECT PIVOT: API CONTRACT DIFF + DEMO DASHBOARD
+==================================================
+
+You are now repurposing this monorepo away from the abandoned personalized OCR attempt.
+
+GOAL
+----
+Delete all OCR-specific backend code, Python OCR code, image-processing code, upload/review flows, and all frontend components/pages that are tied to the handwriting project.
+
+Keep only the basic React + Vite infrastructure and convert the repo into:
+
+1) A standalone API Contract Diff tool
+2) A polished demo-ready React dashboard showcasing the tool
+3) Clean README instructions for running locally and preparing for future global package usage
+
+IMPORTANT
+---------
+- Remove all OCR-related backend files completely.
+- Remove all frontend pages/components tied to OCR, document upload, review, correction, or handwriting.
+- Preserve only the minimal Vite app shell, routing/layout infrastructure if useful, and shared styling setup.
+- Do not leave dead code, dead routes, dead imports, or broken references.
+- The result should feel like a fresh, focused product repo.
+
+NEW PRODUCT DIRECTION
+---------------------
+Product name:
+API Contract Diff
+
+Core idea:
+A developer tool that compares two API contracts and reports breaking/non-breaking changes clearly.
+
+Supported inputs for V1:
+- OpenAPI / Swagger YAML
+- OpenAPI / Swagger JSON
+
+Core capabilities:
+- Compare old contract vs new contract
+- Detect breaking changes
+- Detect additive changes
+- Produce a clean summary
+- Produce detailed diff sections
+- Provide severity levels such as HIGH / MEDIUM / LOW
+- Support a CLI-first workflow in the local implementation
+- The frontend dashboard should be a demo layer around the diff engine
+
+BACKEND / CORE ENGINE
+---------------------
+Implement the API Contract Diff engine as source code in the repo.
+
+Tech stack:
+- TypeScript
+- Node.js
+- Prefer a simple CLI/library implementation
+- No backend framework needed unless it genuinely helps
+- Keep the code clean, testable, and modular
+
+Suggested architecture:
+- parsers/
+- models/
+- compare/
+- rules/
+- reporters/
+- cli/
+- tests/
+
+Required diff rules:
+- endpoint removed
+- endpoint added
+- method removed
+- method added
+- request field removed
+- request field added
+- response field removed
+- response field added
+- field type changed
+- field required/optional changed
+- enum value removed
+- enum value added
+- status code removed
+- status code added
+
+Output format:
+- Human-readable console output
+- JSON output
+- Optional markdown output if easy
+
+The engine should expose a reusable function that the UI can call locally.
+
+DEMO DASHBOARD
+--------------
+Use the existing React + Vite app to build a premium, demo-ready dashboard.
+
+The dashboard should look like a high-quality developer tool product.
+
+UI direction:
+- tasteful
+- modern
+- minimal
+- enterprise-grade
+- premium
+- sharp spacing
+- strong typography
+- polished cards
+- subtle gradients only if tasteful
+- no clutter
+- mobile responsive
+- accessible
+- keyboard-friendly
+- good empty states
+- good loading states
+- good error states
+
+Use the following product-style inspiration:
+- Linear
+- Vercel
+- GitHub
+- Stripe dashboard
+
+Dashboard should include:
+1. Header with product name and short value statement
+2. Input area to load/select old and new contract examples
+3. Diff summary cards
+4. Breaking changes section
+5. Non-breaking changes section
+6. Risk severity breakdown
+7. Side-by-side contract preview or compact comparison panel
+8. Sample-ready demo dataset bundled inside the app
+9. A clear CTA that runs the diff locally
+10. A toggle or note showing that this currently uses the local bundled engine, with a future option to switch to a globally published package
+
+UI BEHAVIOR
+-----------
+The dashboard must be demo-ready out of the box.
+
+Requirements:
+- Default state should already load with sample contract pairs
+- User should be able to click a button and instantly see meaningful output
+- No need to upload files for the demo
+- Allow switching between at least 2-3 sample scenarios:
+  - safe additive change
+  - breaking field removal
+  - breaking type change
+- Show realistic results that make the product obvious in under 10 seconds
+- Keep the experience polished on mobile too
+
+LOCAL VS GLOBAL VERSION
+-----------------------
+Currently:
+- The app should point to the local source implementation of API Contract Diff
+
+Future-ready:
+- Add a config abstraction so the UI can later switch to a globally published version
+- Include a clearly documented interface for replacing the local engine with a package import or remote version later
+
+Example idea:
+- local engine adapter
+- global engine adapter
+- config flag / env flag / feature flag
+
+Do not actually require the global published version now.
+Just make the project structured so it can be swapped later.
+
+README
+------
+Create a strong README.md with:
+- Project overview
+- Why this exists
+- Features
+- Architecture
+- How API Contract Diff works
+- Supported diff rules
+- How to run locally
+- How to test
+- How to run the CLI
+- How to run the React demo
+- How to add new sample contracts
+- Folder structure
+- Future roadmap
+- Notes on local engine vs future global package
+
+The README should be clear enough that a new dev can run the project quickly.
+
+QUALITY BAR
+-----------
+- Remove all broken references to the OCR project
+- Ensure the repo builds cleanly
+- Ensure the React app runs cleanly
+- Ensure the diff engine is testable
+- Add meaningful tests for the comparison logic
+- Keep code simple, readable, and maintainable
+- Prefer real functionality over mock logic
+
+DELIVERABLE
+-----------
+At the end, the repository should contain:
+- A working API Contract Diff TypeScript implementation
+- A polished React + Vite demo dashboard
+- A README with instructions
+- Tests for diff logic
+- No OCR remnants
+- A clean product-focused repo ready for further iteration

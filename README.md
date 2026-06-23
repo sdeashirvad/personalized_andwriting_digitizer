@@ -1,328 +1,209 @@
-# Handwriting Digitizer V1
+# API Contract Diff
 
-A full-stack application that converts handwritten notebook pages into editable digital text using OCR. Features a human-in-the-loop correction workflow and a personal correction profile that improves accuracy over time.
+> Detect breaking and non-breaking changes between OpenAPI/Swagger API versions — instantly.
 
----
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-blue)](https://react.dev/)
+[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0-green)](https://www.openapis.org/)
+
+## What It Does
+
+API Contract Diff compares two OpenAPI (Swagger) specifications and tells you:
+
+- Which changes **break existing clients** (field removals, type changes, endpoint removals)
+- Which changes are **safe to ship** (new endpoints, optional fields added)
+- The **severity** of each change (HIGH / MEDIUM / LOW / INFO)
+- A clear summary suitable for CI gates, PR reviews, and release notes
+
+## Why This Exists
+
+Undetected API breaking changes are one of the most common causes of production incidents. This tool gives developers an instant, automated answer to "is this API change safe to deploy?"
 
 ## Features
 
-- **OCR Processing** — Tesseract-powered text extraction from handwritten images
-- **Confidence Scoring** — Words colour-coded by confidence (high / medium / low)
-- **Interactive Review** — Click any word to correct it inline
-- **Personal Correction Memory** — Your corrections are remembered and auto-suggested on future uploads
-- **Export** — Download digitized documents as TXT, Markdown, or PDF
-- **User Identity** — Lightweight username-based sessions (no auth required)
-- **Dark Mode** — Full dark/light theme support
-- **Responsive** — Works on desktop, tablet, and mobile
-
----
+- **14 diff rules** — endpoints, methods, request/response fields, types, enums, status codes
+- **Severity levels** — HIGH, MEDIUM, LOW, INFO
+- **Breaking / non-breaking classification** — at a glance
+- **YAML and JSON input** — supports OpenAPI 3.0 specs
+- **CLI** — pipe it into CI, pre-push hooks, or release scripts
+- **React demo dashboard** — load sample scenarios in under 10 seconds
+- **Local engine, global-ready** — runs fully offline; structured for npm package swap later
+- **JSON, Markdown, and console output** — use the format you need
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────┐
-│                   Browser                   │
-│         React + Vite + Tailwind CSS         │
-│              port 5000 (dev)                │
-└────────────────────┬────────────────────────┘
-                     │ HTTP / REST
-┌────────────────────▼────────────────────────┐
-│            Backend (Node.js + Express)      │
-│                  port 3001                  │
-│                                             │
-│  ┌──────────────┐  ┌─────────────────────┐  │
-│  │ Upload Svc   │  │ Correction Memory   │  │
-│  │ Document Svc │  │ Export Service      │  │
-│  │ User Svc     │  │ OCR Client          │  │
-│  └──────┬───────┘  └──────────┬──────────┘  │
-│         │                     │             │
-└─────────┼─────────────────────┼─────────────┘
-          │                     │
-┌─────────▼──────────┐  ┌───────▼─────────────┐
-│   PostgreSQL DB    │  │  OCR Sidecar        │
-│  (Replit built-in) │  │  Python + Tesseract │
-└────────────────────┘  │  port 8000          │
-                        └─────────────────────┘
+/engine                    — TypeScript diff engine (zero runtime deps in compare logic)
+  /src
+    /models/types.ts       — shared type definitions
+    /parsers/openapi.ts    — YAML / JSON spec parser (CLI use)
+    /rules/severity.ts     — change type → severity + breaking mapping
+    /compare/contracts.ts  — core diff algorithm
+    /reporters/            — console, JSON, markdown output formatters
+    index.ts               — public API exports
+    cli.ts                 — CLI entry point
+  /tests/compare.test.ts   — test suite (Node built-in test runner)
+
+/frontend                  — React + Vite demo dashboard (port 5000)
+  /src
+    /engine/adapter.ts     — adapter layer (local engine, future global package)
+    /data/samples.ts       — 3 bundled sample scenario pairs
+    /components/           — Header, SummaryCards, ChangesList, ScenarioPicker, ContractPreview
+    /pages/Home.tsx        — main dashboard page
 ```
 
-### Correction Memory Flow
+## Supported Diff Rules
 
+| Rule | Severity | Breaking |
+|------|----------|---------|
+| Endpoint removed | HIGH | ✅ |
+| Method removed | HIGH | ✅ |
+| Response field removed | HIGH | ✅ |
+| Field type changed | HIGH | ✅ |
+| Field required/optional changed | HIGH | ✅ |
+| Enum value removed | HIGH | ✅ |
+| Status code removed | HIGH | ✅ |
+| Request field removed | MEDIUM | ✅ |
+| Request field added | LOW | ❌ |
+| Response field added | LOW | ❌ |
+| Enum value added | LOW | ❌ |
+| Endpoint added | INFO | ❌ |
+| Method added | INFO | ❌ |
+| Status code added | INFO | ❌ |
+
+## How the Diff Works
+
+1. Both specs are parsed (YAML or JSON) into an `OpenAPIContract` object
+2. All paths and HTTP methods are enumerated from both specs
+3. Removed paths → `endpoint-removed`; added paths → `endpoint-added`
+4. For each shared path, methods are compared
+5. For each shared operation, request body and response schemas are recursively diffed
+6. Field-level changes (type, required, enum) are detected with per-property comparison
+7. Each change is tagged with a `ChangeType`, `Severity`, and `breaking` flag
+8. A `DiffResult` is returned with a full summary and change list
+
+## Run Locally
+
+### Prerequisites
+
+- Node.js 18+
+
+### 1. Install dependencies
+
+```bash
+cd frontend && npm install
+cd ../engine && npm install
 ```
-User corrects "systcm" → "system"
-        ↓
-Stored in corrections table (user_id, original, corrected, frequency)
-        ↓
-Next upload: OCR sees "systcm"
-        ↓
-Profile matched → suggestion shown inline
-        ↓
-User confirms → frequency incremented
+
+### 2. Start the demo dashboard
+
+```bash
+cd frontend && npm run dev
+# Opens on http://localhost:5000
 ```
 
----
+### 3. Run the CLI
 
-## Tech Stack
+```bash
+cd engine
 
-| Layer     | Technology                                 |
-|-----------|--------------------------------------------|
-| Frontend  | React 18, Vite, TypeScript, Tailwind CSS   |
-| Backend   | Node.js 20, Express 5                      |
-| OCR       | Python 3.11, Flask, Tesseract, Pillow      |
-| Database  | PostgreSQL (Replit built-in)               |
-| Packaging | Docker, docker-compose                     |
+# Compare two spec files
+npx tsx src/cli.ts path/to/old.yaml path/to/new.yaml
 
----
+# Output as JSON
+npx tsx src/cli.ts old.yaml new.yaml --format json
+
+# Output as Markdown
+npx tsx src/cli.ts old.yaml new.yaml --format markdown
+
+# Exit code: 0 = no breaking changes, 1 = breaking changes found, 2 = parse error
+```
+
+### 4. Run tests
+
+```bash
+cd engine
+npx tsx --test tests/*.test.ts
+```
+
+## Demo Scenarios
+
+The dashboard ships with 3 bundled scenarios — no uploads needed:
+
+| Scenario | Description |
+|----------|-------------|
+| **Safe Additive** | New endpoints and optional fields added — zero breaking changes |
+| **Breaking Removal** | Endpoint removed, required field removed — HIGH severity |
+| **Type Change** | Field type changed, enum value removed — subtle but dangerous |
+
+## How to Add Sample Contracts
+
+Edit `frontend/src/data/samples.ts` and add a new entry to the `SCENARIOS` array:
+
+```typescript
+{
+  id: 'my-scenario',
+  label: 'My Scenario',
+  description: 'What changed and why it matters',
+  tag: 'Breaking',
+  tagColor: 'red',          // 'red' | 'emerald'
+  oldContract: `...yaml or json string...`,
+  newContract: `...yaml or json string...`,
+}
+```
+
+## Local Engine vs Future Global Package
+
+The engine adapter in `frontend/src/engine/adapter.ts` uses a feature flag:
+
+```typescript
+export const ENGINE_MODE: EngineMode = 'local' // change to 'global' when ready
+```
+
+When `'local'`, the TypeScript diff engine is bundled directly into the frontend.
+
+To switch to a future globally-published package:
+1. Change `ENGINE_MODE` to `'global'`
+2. Install: `npm install @api-contract-diff/engine`
+3. Implement `globalDiff` in adapter.ts using the package
+
+The adapter interface (`RunDiffOptions` → `RunDiffResult`) is identical for both modes.
 
 ## Folder Structure
 
 ```
-/
-├── frontend/              # React + Vite app
+.
+├── engine/
 │   ├── src/
-│   │   ├── api/           # API client functions
-│   │   ├── components/    # Shared UI components
-│   │   ├── hooks/         # Custom React hooks
-│   │   ├── pages/         # Page components
-│   │   └── types/         # TypeScript types
+│   │   ├── models/types.ts
+│   │   ├── parsers/openapi.ts
+│   │   ├── rules/severity.ts
+│   │   ├── compare/contracts.ts
+│   │   ├── reporters/{console,json,markdown}.ts
+│   │   ├── index.ts
+│   │   └── cli.ts
+│   ├── tests/compare.test.ts
+│   ├── package.json
+│   └── tsconfig.json
+├── frontend/
+│   ├── src/
+│   │   ├── engine/adapter.ts
+│   │   ├── data/samples.ts
+│   │   ├── components/
+│   │   ├── pages/Home.tsx
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   ├── package.json
 │   └── vite.config.ts
-│
-├── backend/               # Express API server
-│   └── src/
-│       ├── db/            # Database pool + schema
-│       ├── middleware/    # Error handler
-│       ├── routes/        # documents, users, pages
-│       └── services/      # Business logic
-│
-├── ocr-service/           # Python Flask OCR sidecar
-│   └── app.py
-│
-├── storage/               # Local file storage
-│   ├── uploads/           # Original uploaded files
-│   ├── processed/         # Preprocessed images
-│   └── exports/           # TXT / PDF / MD exports
-│
-├── Dockerfile
-└── docker-compose.yml
+└── README.md
 ```
-
----
-
-## Screenshots
-
-> _Upload screen, review interface, and export page screenshots would go here._
-
----
-
-## Local Setup (Development)
-
-### Prerequisites
-
-- Node.js 20+
-- Python 3.11+
-- Tesseract OCR (`brew install tesseract` / `apt install tesseract-ocr`)
-- PostgreSQL (or use Replit's built-in)
-
-### 1. Clone and install
-
-```bash
-git clone <repo-url>
-cd handwriting-digitizer
-
-# Install frontend dependencies
-cd frontend && npm install && cd ..
-
-# Install backend dependencies
-cd backend && npm install && cd ..
-
-# Install OCR sidecar dependencies
-cd ocr-service && pip install -r requirements.txt && cd ..
-```
-
-### 2. Configure environment
-
-```bash
-# backend/.env
-DATABASE_URL=postgresql://user:password@localhost:5432/handwriting_digitizer
-OCR_SERVICE_URL=http://localhost:8000
-SERVER_PORT=3001
-```
-
-### 3. Start all three services
-
-**Terminal 1 — Frontend:**
-```bash
-cd frontend && npm run dev
-```
-
-**Terminal 2 — Backend:**
-```bash
-cd backend && node src/server.js
-```
-
-**Terminal 3 — OCR Service:**
-```bash
-cd ocr-service && python app.py
-```
-
-Visit `http://localhost:5000`
-
----
-
-## Docker Setup
-
-### Build and run
-
-```bash
-# With PostgreSQL (recommended)
-DATABASE_URL=postgresql://user:pass@host:5432/dbname docker-compose up --build
-
-# Or just the app (bring your own DB)
-docker build -t handwriting-digitizer .
-docker run -p 3001:3001 \
-  -e DATABASE_URL=postgresql://... \
-  -v $(pwd)/storage:/app/storage \
-  handwriting-digitizer
-```
-
-### Volumes
-
-Uploaded files persist via the `/app/storage` volume mount. Always mount this in production to avoid data loss on container restart.
-
----
-
-## Railway Deployment
-
-1. Push this repository to GitHub
-2. Create a new Railway project from GitHub
-3. Add a **PostgreSQL** plugin — Railway auto-injects `DATABASE_URL`
-4. Set environment variables:
-   ```
-   NODE_ENV=production
-   SERVER_PORT=3001
-   ```
-5. Railway auto-detects the `Dockerfile` and deploys
-
-Health check endpoint: `GET /health`
-
----
-
-## Oracle VM Deployment
-
-```bash
-# Install Docker on Oracle Linux
-sudo yum install -y docker
-sudo systemctl start docker
-
-# Clone and build
-git clone <repo> && cd handwriting-digitizer
-docker-compose up -d --build
-
-# Open firewall port
-sudo firewall-cmd --permanent --add-port=3001/tcp && sudo firewall-cmd --reload
-```
-
----
-
-## Database Configuration
-
-### Using PostgreSQL (Recommended)
-
-```bash
-# Create database
-createdb handwriting_digitizer
-
-# Set environment variable
-DATABASE_URL=postgresql://username:password@localhost:5432/handwriting_digitizer
-```
-
-The schema is created automatically on first startup.
-
-Required environment variables:
-| Variable            | Description                        |
-|---------------------|------------------------------------|
-| `DATABASE_URL`      | Full PostgreSQL connection string  |
-| `PGHOST`            | Database host                      |
-| `PGPORT`            | Database port (default: 5432)      |
-| `PGUSER`            | Database username                  |
-| `PGPASSWORD`        | Database password                  |
-| `PGDATABASE`        | Database name                      |
-
----
-
-## OCR Service Setup
-
-The OCR sidecar uses Tesseract under the hood.
-
-**Install Tesseract:**
-
-```bash
-# macOS
-brew install tesseract
-
-# Ubuntu/Debian
-apt-get install tesseract-ocr tesseract-ocr-eng
-
-# Alpine (Docker)
-apk add tesseract-ocr tesseract-ocr-data-eng
-```
-
-**Configure the endpoint:**
-```bash
-OCR_SERVICE_URL=http://localhost:8000   # default
-```
-
----
-
-## Environment Variables
-
-| Variable         | Default                      | Description                      |
-|------------------|------------------------------|----------------------------------|
-| `DATABASE_URL`   | —                            | PostgreSQL connection string     |
-| `OCR_SERVICE_URL`| `http://localhost:8000`      | OCR sidecar URL                  |
-| `SERVER_PORT`    | `3001`                       | Backend port                     |
-| `STORAGE_PATH`   | `../storage`                 | File storage root                |
-| `NODE_ENV`       | `development`                | Environment mode                 |
-
----
-
-## Confidence Levels
-
-| Level  | Threshold | Display          |
-|--------|-----------|------------------|
-| High   | ≥ 90%     | No highlight     |
-| Medium | 70–89%    | Amber highlight  |
-| Low    | < 70%     | Red highlight    |
-
----
-
-## Troubleshooting
-
-**OCR returns empty text**
-- Ensure Tesseract is installed: `tesseract --version`
-- Check OCR sidecar logs — it runs on port 8000
-
-**Database connection refused**
-- Verify `DATABASE_URL` is set correctly
-- For Replit: the `DATABASE_URL` env var is injected automatically
-
-**Images not displaying in review**
-- Check that `storage/uploads/` is writable
-- The image proxy route is `GET /api/pages/:pageId/image`
-
-**Frontend can't reach backend**
-- In development, Vite proxies `/api` requests to `localhost:3001`
-- Verify the Backend API workflow is running
-
----
 
 ## Future Roadmap
 
-- [ ] Fuzzy matching for correction suggestions
-- [ ] Multi-page PDF support (pdf2image)
-- [ ] Character-level handwriting profiles
-- [ ] Vector similarity correction search
-- [ ] Personal handwriting embeddings
-- [ ] Multi-language support (Tesseract language packs)
-- [ ] Offline desktop mode (Electron wrapper)
-- [ ] Batch document processing
-- [ ] Webhook notifications on processing complete
+- [ ] Publish engine as `@api-contract-diff/engine` on npm
+- [ ] `$ref` deep resolution across components
+- [ ] `allOf` / `oneOf` / `anyOf` schema merging
+- [ ] GitHub Actions integration example
+- [ ] VS Code extension
+- [ ] Upload custom spec files in the dashboard
+- [ ] Diff history and saved comparisons
