@@ -1,0 +1,424 @@
+PROJECT: Handwriting Digitizer (V1)
+
+GOAL
+
+Build a full-stack application that converts handwritten notebook pages into editable digital text.
+
+The system should support user-assisted correction of low-confidence OCR results and maintain a personal correction profile that improves future digitization accuracy.
+
+This is NOT a generic OCR wrapper.
+
+The primary focus is:
+
+* Human-in-the-loop document digitization
+* Confidence-driven review workflows
+* User-specific correction memory
+* Exportable digital documents
+
+TECH STACK
+
+Monorepo Structure
+
+/root
+/frontend
+/backend
+
+Frontend
+
+* React
+* Vite
+* TypeScript
+* Tailwind CSS
+* React Query
+* React Router
+
+Backend
+
+* Spring Boot 3+
+* Java 21
+* Maven
+* PostgreSQL
+* JPA/Hibernate
+
+OCR Service
+
+* Python sidecar service preferred
+* EasyOCR preferred
+* Tesseract acceptable fallback
+
+Image Processing
+
+* OpenCV
+
+FILE STORAGE
+
+Store uploaded files locally for V1.
+
+Directory structure:
+
+storage/
+uploads/
+processed/
+exports/
+
+No cloud dependency.
+
+No paid APIs.
+
+CORE USER FLOW
+
+FIRST UPLOAD
+
+1. User uploads handwritten images or PDF.
+
+2. Backend:
+
+   * stores original file
+   * converts PDF pages to images if required
+   * preprocesses images
+   * executes OCR
+   * generates extracted text
+   * generates confidence scores
+
+3. System identifies:
+
+   * uncertain words
+   * uncertain lines
+   * low confidence OCR regions
+
+4. Frontend displays:
+
+   * original image
+   * OCR output
+   * highlighted uncertain words
+
+5. User reviews and corrects.
+
+6. Corrections are persisted.
+
+7. Final document generated.
+
+8. User can export:
+
+   * TXT
+   * PDF
+   * Markdown
+
+FUTURE UPLOADS
+
+When same user uploads additional notes:
+
+1. OCR runs normally.
+
+2. Personal correction profile is loaded.
+
+3. Corrections are applied.
+
+4. Confidence recalculated.
+
+5. Only unresolved ambiguities are presented.
+
+6. User corrections continue improving profile.
+
+MVP RULE
+
+Do NOT implement ML model training.
+
+Instead implement:
+
+Correction Memory Engine
+
+Store:
+
+* OCR output
+* corrected output
+* confidence
+* frequency
+
+Example
+
+OCR:
+"systcm"
+
+Correction:
+"system"
+
+Future occurrences should automatically suggest:
+
+"system"
+
+using correction memory.
+
+DOMAIN MODEL
+
+User
+
+* id
+* username
+* createdAt
+
+Document
+
+* id
+* userId
+* originalFilename
+* uploadTime
+* status
+
+Page
+
+* id
+* documentId
+* imagePath
+* pageNumber
+
+OCRResult
+
+* id
+* pageId
+* rawText
+* confidence
+
+Correction
+
+* id
+* userId
+* originalWord
+* correctedWord
+* frequency
+
+ExportFile
+
+* id
+* documentId
+* fileType
+* filePath
+
+DOCUMENT STATUS
+
+UPLOADED
+
+PROCESSING
+
+AWAITING_REVIEW
+
+REVIEWED
+
+EXPORTED
+
+FAILED
+
+BACKEND MODULES
+
+upload-service
+
+ocr-service
+
+image-preprocessing-service
+
+confidence-engine
+
+correction-memory-service
+
+export-service
+
+document-service
+
+OCR PIPELINE
+
+Image
+
+↓
+
+Grayscale
+
+↓
+
+Noise Reduction
+
+↓
+
+Thresholding
+
+↓
+
+OCR
+
+↓
+
+Confidence Extraction
+
+↓
+
+Low Confidence Detection
+
+↓
+
+Correction Suggestions
+
+↓
+
+Review Workflow
+
+↓
+
+Export
+
+CONFIDENCE RULES
+
+High Confidence
+
+> = 90
+
+Medium Confidence
+70-89
+
+Low Confidence
+< 70
+
+Only medium and low confidence words should appear in review UI.
+
+REVIEW SCREEN
+
+Layout
+
+Left:
+Original page image
+
+Right:
+OCR text editor
+
+Features
+
+* highlight low confidence words
+* click to edit
+* save corrections
+* approve page
+
+PERSONAL CORRECTION PROFILE
+
+For each user maintain:
+
+known corrections
+
+Example
+
+systcm -> system
+
+databasc -> database
+
+projcct -> project
+
+When OCR generates same token later:
+
+Automatically suggest correction.
+
+Implement exact match first.
+
+Design architecture to allow fuzzy matching later.
+
+EXPORTS
+
+TXT
+
+Markdown
+
+PDF
+
+Generated document should contain:
+
+title
+
+page breaks
+
+merged corrected content
+
+API DESIGN
+
+POST /api/documents/upload
+
+GET /api/documents/{id}
+
+GET /api/documents/{id}/review
+
+POST /api/documents/{id}/corrections
+
+POST /api/documents/{id}/approve
+
+GET /api/documents/{id}/export/pdf
+
+GET /api/documents/{id}/export/txt
+
+GET /api/documents/{id}/export/md
+
+NON-FUNCTIONAL REQUIREMENTS
+
+Clean layered architecture.
+
+SOLID principles.
+
+DTO separation.
+
+Global exception handling.
+
+Validation.
+
+Audit logging.
+
+Pagination.
+
+OpenAPI/Swagger.
+
+Docker support.
+
+docker-compose for:
+
+backend
+
+postgres
+
+ocr-service
+
+README REQUIREMENTS
+
+Architecture diagram
+
+Sequence diagram
+
+OCR workflow diagram
+
+Correction memory explanation
+
+Future roadmap
+
+FUTURE ROADMAP (DOCUMENT ONLY)
+
+Character-level handwriting profile
+
+Vector similarity correction search
+
+Personal handwriting embeddings
+
+Multi-language handwriting support
+
+Offline desktop mode
+
+SUCCESS CRITERIA
+
+A user can:
+
+1. Upload handwritten notes.
+
+2. Receive OCR text.
+
+3. Correct uncertain words.
+
+4. Save corrections.
+
+5. Upload another document.
+
+6. Observe automatic correction suggestions based on previous feedback.
+
+7. Export final document as PDF/TXT/Markdown.
+
+Focus on robustness, architecture quality, and maintainability over AI sophistication.
