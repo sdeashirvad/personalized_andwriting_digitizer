@@ -12,9 +12,9 @@ export default function App() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div style={{ minHeight: '100vh', backgroundColor: '#09090b', color: '#f4f4f5', display: 'flex', flexDirection: 'column', width: '100%' }}>
       <Header />
-      <main>
+      <main style={{ flex: 1, width: '100%' }}>
         <Routes>
           <Route path="/" element={<Home />} />
         </Routes>
