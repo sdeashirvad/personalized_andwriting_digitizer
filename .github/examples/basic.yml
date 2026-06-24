@@ -1,0 +1,48 @@
+name: API Contract Diff
+
+on:
+  pull_request:
+    paths:
+      - 'specs/**'
+      - 'openapi.yaml'
+      - 'api/**/*.yaml'
+
+jobs:
+  api-contract-diff:
+    name: Check API Contract
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write  # required to post PR comments
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # needed to access base-branch spec
+
+      - name: Fetch base-branch spec
+        run: |
+          git show origin/${{ github.base_ref }}:openapi.yaml > /tmp/old-spec.yaml
+
+      - name: Run API Contract Diff
+        id: diff
+        uses: ./  # uses action.yml at repo root
+        with:
+          old-spec: /tmp/old-spec.yaml
+          new-spec: openapi.yaml
+          comment-mode: full
+
+      - name: Print outputs
+        run: |
+          echo "Risk score   : ${{ steps.diff.outputs.risk-score }}"
+          echo "Risk level   : ${{ steps.diff.outputs.risk-level }}"
+          echo "Breaking     : ${{ steps.diff.outputs.breaking-count }}"
+          echo "Report file  : ${{ steps.diff.outputs.report-path }}"
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-contract-diff-report
+          path: ${{ steps.diff.outputs.report-path }}

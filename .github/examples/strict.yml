@@ -1,0 +1,53 @@
+name: API Contract Diff (Strict)
+
+# Strict mode: any breaking change fails the build.
+# Use for APIs where all consumers are known and must be notified before any change.
+
+on:
+  pull_request:
+    paths:
+      - 'specs/**'
+
+jobs:
+  api-contract-diff:
+    name: Strict API Contract Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base-branch spec
+        run: |
+          git show origin/${{ github.base_ref }}:specs/openapi.yaml > /tmp/old-spec.yaml
+
+      - name: Run API Contract Diff (strict)
+        id: diff
+        uses: ./
+        with:
+          old-spec: /tmp/old-spec.yaml
+          new-spec: specs/openapi.yaml
+          # Fail on ANY breaking change, including MEDIUM severity
+          fail-on-medium: 'true'
+          # Post a detailed comment on the PR
+          comment-mode: full
+          report-path: strict-report.json
+
+      - name: Block merge if breaking changes found
+        if: steps.diff.outputs.breaking-count > 0
+        run: |
+          echo "::error::${{ steps.diff.outputs.breaking-count }} breaking change(s) detected."
+          echo "::error::This is a strict API — all breaking changes require approval."
+          exit 1
+
+      - name: Upload strict report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: strict-api-diff-report
+          path: strict-report.json

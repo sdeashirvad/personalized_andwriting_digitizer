@@ -1,0 +1,71 @@
+name: API Contract Diff (Governed)
+
+# Governed mode: uses specguard.yml to track approved breaking changes.
+# Breaking changes that are approved pass CI. Unapproved ones fail it.
+# This is the recommended workflow for production APIs with planned migrations.
+
+on:
+  pull_request:
+    paths:
+      - 'specs/**'
+      - 'specguard.yml'   # also re-run when governance rules change
+
+jobs:
+  api-contract-diff:
+    name: Governed API Contract Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base-branch spec
+        run: |
+          git show origin/${{ github.base_ref }}:specs/openapi.yaml > /tmp/old-spec.yaml
+
+      - name: Run API Contract Diff with governance
+        id: diff
+        uses: ./
+        with:
+          old-spec: /tmp/old-spec.yaml
+          new-spec: specs/openapi.yaml
+          # Load governance rules from specguard.yml
+          config-path: specguard.yml
+          # Only fail for HIGH/CRITICAL — MEDIUM breaking changes with approvals pass
+          fail-on-high: 'true'
+          # Full PR comment includes governance section
+          comment-mode: full
+          report-path: governed-report.json
+
+      - name: Fail if expired approvals exist
+        if: steps.diff.outputs.expired-count > 0
+        run: |
+          echo "::error::${{ steps.diff.outputs.expired-count }} governance approval(s) have expired."
+          echo "::error::Update the 'expires' date in specguard.yml or remove the approval entry."
+          exit 1
+
+      - name: Warn about unapproved breaking changes
+        if: steps.diff.outputs.unapproved-count > 0
+        run: |
+          echo "::warning::${{ steps.diff.outputs.unapproved-count }} breaking change(s) have no governance entry."
+          echo "::warning::Add entries to specguard.yml to track approval decisions."
+
+      - name: Governance summary
+        run: |
+          echo "Governance Report"
+          echo "  Approved    : ${{ steps.diff.outputs.approved-count }}"
+          echo "  Expired     : ${{ steps.diff.outputs.expired-count }}"
+          echo "  Unapproved  : ${{ steps.diff.outputs.unapproved-count }}"
+          echo "  Risk level  : ${{ steps.diff.outputs.risk-level }}"
+
+      - name: Upload governed report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: governed-api-diff-report
+          path: governed-report.json

@@ -1,0 +1,280 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/your-org/api-contract-diff/contract-diff-report.schema.json",
+  "title": "ContractDiffReport",
+  "description": "Canonical versioned output of an API Contract Diff run. Schema version 1.0.",
+  "type": "object",
+  "required": [
+    "reportVersion",
+    "generatedAt",
+    "toolVersion",
+    "riskScore",
+    "riskLevel",
+    "riskBreakdown",
+    "summary",
+    "metadata",
+    "changes",
+    "impacts"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "reportVersion": {
+      "type": "string",
+      "description": "Schema version string, e.g. '1.0'",
+      "pattern": "^\\d+\\.\\d+$",
+      "examples": ["1.0"]
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of report generation"
+    },
+    "toolVersion": {
+      "type": "string",
+      "description": "SemVer version of the api-contract-diff engine",
+      "examples": ["1.1.0"]
+    },
+    "riskScore": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Weighted numeric risk score (0 = no risk, higher = riskier)"
+    },
+    "riskLevel": {
+      "type": "string",
+      "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"],
+      "description": "Human-readable risk category derived from riskScore"
+    },
+    "riskBreakdown": {
+      "type": "array",
+      "description": "Per-change-type breakdown of the risk score",
+      "items": {
+        "$ref": "#/$defs/RiskBreakdownItem"
+      }
+    },
+    "summary": {
+      "$ref": "#/$defs/DiffSummary"
+    },
+    "metadata": {
+      "$ref": "#/$defs/DiffMetadata"
+    },
+    "changes": {
+      "type": "array",
+      "description": "Full list of detected changes with optional governance status",
+      "items": {
+        "$ref": "#/$defs/DiffChange"
+      }
+    },
+    "impacts": {
+      "type": "array",
+      "description": "Consumer-facing impact analysis for breaking changes",
+      "items": {
+        "$ref": "#/$defs/ImpactReport"
+      }
+    },
+    "governance": {
+      "$ref": "#/$defs/GovernanceSummary",
+      "description": "Governance summary — present only when a specguard.yml config was provided"
+    }
+  },
+  "$defs": {
+    "RiskBreakdownItem": {
+      "type": "object",
+      "required": ["changeType", "label", "weight", "count", "contribution"],
+      "additionalProperties": false,
+      "properties": {
+        "changeType": {
+          "type": "string",
+          "description": "The change type this item represents"
+        },
+        "label": {
+          "type": "string",
+          "description": "Human-readable label for the change type"
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Risk weight applied per occurrence"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of changes of this type"
+        },
+        "contribution": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total risk contribution (weight × count)"
+        }
+      }
+    },
+    "DiffSummary": {
+      "type": "object",
+      "required": ["total", "breaking", "nonBreaking", "bySeverity"],
+      "additionalProperties": false,
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of changes detected"
+        },
+        "breaking": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of breaking changes"
+        },
+        "nonBreaking": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of non-breaking changes"
+        },
+        "bySeverity": {
+          "type": "object",
+          "required": ["HIGH", "MEDIUM", "LOW", "INFO"],
+          "additionalProperties": false,
+          "properties": {
+            "HIGH":   { "type": "integer", "minimum": 0 },
+            "MEDIUM": { "type": "integer", "minimum": 0 },
+            "LOW":    { "type": "integer", "minimum": 0 },
+            "INFO":   { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "DiffMetadata": {
+      "type": "object",
+      "required": ["oldTitle", "newTitle", "oldVersion", "newVersion", "timestamp"],
+      "additionalProperties": false,
+      "properties": {
+        "oldTitle":    { "type": "string", "description": "Title from the old spec's info.title" },
+        "newTitle":    { "type": "string", "description": "Title from the new spec's info.title" },
+        "oldVersion":  { "type": "string", "description": "Version from the old spec's info.version" },
+        "newVersion":  { "type": "string", "description": "Version from the new spec's info.version" },
+        "timestamp":   { "type": "string", "format": "date-time", "description": "ISO 8601 timestamp of the diff run" }
+      }
+    },
+    "DiffChange": {
+      "type": "object",
+      "required": ["type", "severity", "breaking", "path", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "endpoint-removed", "endpoint-added",
+            "method-removed", "method-added",
+            "request-field-removed", "request-field-added",
+            "response-field-removed", "response-field-added",
+            "field-type-changed", "field-required-changed",
+            "enum-value-removed", "enum-value-added",
+            "status-code-removed", "status-code-added"
+          ],
+          "description": "Machine-readable change type identifier"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["HIGH", "MEDIUM", "LOW", "INFO"],
+          "description": "Severity of the change"
+        },
+        "breaking": {
+          "type": "boolean",
+          "description": "Whether this change is breaking for existing consumers"
+        },
+        "path": {
+          "type": "string",
+          "description": "OpenAPI path where the change occurred",
+          "examples": ["/users/{id}", "/orders"]
+        },
+        "method": {
+          "type": "string",
+          "description": "HTTP method (get/post/put/patch/delete) if applicable"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the change"
+        },
+        "oldValue": {
+          "description": "Previous value, if applicable"
+        },
+        "newValue": {
+          "description": "New value, if applicable"
+        },
+        "governanceStatus": {
+          "type": "string",
+          "enum": ["APPROVED", "SUPPRESSED", "EXPIRED", "UNAPPROVED"],
+          "description": "Governance status — only present when specguard.yml is loaded"
+        },
+        "governanceMetadata": {
+          "$ref": "#/$defs/GovernanceApprovalMetadata"
+        }
+      }
+    },
+    "GovernanceApprovalMetadata": {
+      "type": "object",
+      "required": ["owner", "approvedBy", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "owner":      { "type": "string", "description": "Team or person who owns this approval" },
+        "approvedBy": { "type": "string", "description": "Who signed off on the approval" },
+        "reason":     { "type": "string", "description": "Human-readable reason for the approval" },
+        "expires":    { "type": "string", "description": "ISO 8601 date after which approval expires" },
+        "createdAt":  { "type": "string", "description": "ISO 8601 timestamp when approval was created" }
+      }
+    },
+    "ImpactReport": {
+      "type": "object",
+      "required": ["change", "impacts", "severity", "category"],
+      "additionalProperties": false,
+      "properties": {
+        "change":   { "$ref": "#/$defs/DiffChange" },
+        "impacts":  {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of consumer-facing impact statements"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["BREAKING", "NON_BREAKING"]
+        },
+        "category": {
+          "type": "string",
+          "description": "Impact category label"
+        }
+      }
+    },
+    "GovernanceSummary": {
+      "type": "object",
+      "required": ["enabled", "approved", "expired", "suppressed", "unapprovedBreaking"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether governance was configured for this run"
+        },
+        "approved": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Changes matched by a valid (non-expired) approval"
+        },
+        "expired": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Changes matched by an expired approval"
+        },
+        "suppressed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Changes matched by a suppression rule"
+        },
+        "unapprovedBreaking": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Breaking changes with no approval or suppression"
+        },
+        "configPath": {
+          "type": "string",
+          "description": "Path to the governance config file if loaded from disk"
+        }
+      }
+    }
+  }
+}

@@ -15,6 +15,7 @@ export { toHTML } from './reporters/html.js'
 
 // ─── PR / GitHub Action ───────────────────────────────────────────────────────
 export { generatePRComment, getPRCommentMarker } from './github-action/PRCommentRenderer.js'
+export type { PRCommentMode } from './github-action/PRCommentRenderer.js'
 
 // ─── Rules ────────────────────────────────────────────────────────────────────
 export { RULE_MAP } from './rules/severity.js'

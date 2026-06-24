@@ -1,3 +1,4 @@
 - [API Contract Diff pivot](project-pivot.md) — project fully repurposed from OCR to API diff tool; engine in /engine, frontend in /frontend, no backend server
 - [Engine tarball workflow](engine-tarball.md) — engine built as tarball, installed in frontend; must clear frontend/node_modules/.vite after tarball updates
 - [Governance engine](governance-engine.md) — Phase 4 complete; SpecGuardConfig, ApprovalEngine, SuppressionEngine, GovernanceEngine in engine/src/governance/; GovernancePanel in frontend
+- [GitHub Action Phase 5](github-action.md) — action.yml at root, action-runtime in .github/action-runtime/ (tsc ESM to dist/); cp not npm install to update engine in node_modules (rm -rf blocked by sandbox)

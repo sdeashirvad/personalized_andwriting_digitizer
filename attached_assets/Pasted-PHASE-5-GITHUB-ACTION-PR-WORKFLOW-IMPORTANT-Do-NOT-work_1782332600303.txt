@@ -1,0 +1,242 @@
+PHASE 5 — GITHUB ACTION & PR WORKFLOW
+
+IMPORTANT
+
+Do NOT work on WebView.
+
+Do NOT work on SaaS features.
+
+Do NOT redesign the dashboard.
+
+Focus exclusively on GitHub workflow integration.
+
+==================================================
+PRIMARY GOAL
+============
+
+Transform SpecGuard from a CLI tool into a CI/CD tool.
+
+A pull request should be able to:
+
+1. Run SpecGuard
+2. Generate a ContractDiffReport
+3. Evaluate governance rules
+4. Generate PR comments
+5. Optionally fail builds
+
+==================================================
+STEP 1 — GITHUB ACTION IMPLEMENTATION
+=====================================
+
+Implement a real GitHub Action.
+
+Create:
+
+.github/
+action.yml
+
+Requirements:
+
+Inputs:
+
+old-spec
+
+new-spec
+
+config-path
+
+fail-on-high
+
+fail-on-medium
+
+report-format
+
+Outputs:
+
+risk-score
+
+risk-level
+
+breaking-count
+
+approved-count
+
+expired-count
+
+unapproved-count
+
+report-path
+
+==================================================
+STEP 2 — ACTION RUNTIME
+=======================
+
+Implement action runtime.
+
+The action must:
+
+Load contracts
+
+Load governance config
+
+Generate ContractDiffReport
+
+Generate outputs
+
+Return proper exit codes
+
+==================================================
+STEP 3 — PR COMMENT INTEGRATION
+===============================
+
+Use existing:
+
+generatePRComment()
+
+Implement:
+
+comment generation pipeline
+
+Comment should contain:
+
+Risk Score
+
+Governance Summary
+
+Breaking Changes
+
+Approved Changes
+
+Unapproved Changes
+
+Consumer Impact Summary
+
+==================================================
+STEP 4 — COMMENT MODES
+======================
+
+Support:
+
+off
+
+summary
+
+full
+
+Examples:
+
+comment-mode: summary
+
+comment-mode: full
+
+==================================================
+STEP 5 — GITHUB WORKFLOW EXAMPLES
+=================================
+
+Create examples:
+
+.github/examples/
+
+Include:
+
+basic.yml
+
+strict.yml
+
+governed.yml
+
+==================================================
+STEP 6 — ACTION DOCUMENTATION
+=============================
+
+Create:
+
+docs/github-action.md
+
+README updates
+
+Include:
+
+installation
+
+usage
+
+outputs
+
+exit code behavior
+
+governance integration
+
+==================================================
+STEP 7 — JSON CONTRACT SCHEMA
+=============================
+
+Add:
+
+contract-diff-report.schema.json
+
+Schema must match:
+
+ContractDiffReport
+
+Future integrations should validate against this schema.
+
+==================================================
+STEP 8 — NPM PACKAGE READINESS
+==============================
+
+Audit package structure.
+
+Verify:
+
+npm pack
+
+works correctly.
+
+Verify:
+
+CLI works after tarball installation.
+
+Document:
+
+local package testing process.
+
+==================================================
+STEP 9 — VALIDATION
+===================
+
+Run:
+
+npm install
+
+npm test
+
+npm run build
+
+npm pack
+
+Verify:
+
+Action builds
+
+CLI works
+
+Schema generated
+
+Comment rendering works
+
+All tests pass
+
+Provide:
+
+Files created
+
+Files modified
+
+Action example
+
+Generated comment example
+
+Pack validation result
+
+Test results

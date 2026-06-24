@@ -1,0 +1,63 @@
+name: 'API Contract Diff'
+description: 'Detect breaking and non-breaking changes between two OpenAPI/Swagger specs with governance support'
+author: 'api-contract-diff'
+
+branding:
+  icon: 'shield'
+  color: 'purple'
+
+inputs:
+  old-spec:
+    description: 'Path to the old OpenAPI/Swagger spec (.yaml, .yml, or .json)'
+    required: true
+  new-spec:
+    description: 'Path to the new OpenAPI/Swagger spec (.yaml, .yml, or .json)'
+    required: true
+  config-path:
+    description: 'Path to specguard.yml governance config (defaults to ./specguard.yml if it exists)'
+    required: false
+    default: 'specguard.yml'
+  fail-on-high:
+    description: 'Only fail CI for HIGH/CRITICAL severity breaking changes; MEDIUM/LOW changes are reported but not blocking'
+    required: false
+    default: 'false'
+  fail-on-medium:
+    description: 'Fail CI for any breaking change regardless of severity'
+    required: false
+    default: 'false'
+  comment-mode:
+    description: 'PR comment verbosity: off | summary | full'
+    required: false
+    default: 'full'
+  report-format:
+    description: 'Report format written to report-path: json | markdown | console'
+    required: false
+    default: 'json'
+  report-path:
+    description: 'File path to write the report (default: api-contract-diff-report.json)'
+    required: false
+    default: 'api-contract-diff-report.json'
+  token:
+    description: 'GitHub token for posting PR comments (needs pull-requests: write permission)'
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  risk-score:
+    description: 'Weighted numeric risk score (0 = no risk)'
+  risk-level:
+    description: 'Risk category: NONE | LOW | MEDIUM | HIGH | CRITICAL'
+  breaking-count:
+    description: 'Total number of breaking changes detected'
+  approved-count:
+    description: 'Number of breaking changes with a valid governance approval'
+  expired-count:
+    description: 'Number of changes whose governance approval has expired'
+  unapproved-count:
+    description: 'Number of breaking changes with no governance approval'
+  report-path:
+    description: 'Absolute path to the generated report file'
+
+runs:
+  using: 'node20'
+  main: '.github/action-runtime/dist/index.js'
