@@ -3,3 +3,4 @@
 - [Governance engine](governance-engine.md) — Phase 4 complete; SpecGuardConfig, ApprovalEngine, SuppressionEngine, GovernanceEngine in engine/src/governance/; GovernancePanel in frontend
 - [GitHub Action Phase 5](github-action.md) — action.yml at root, action-runtime in .github/action-runtime/ (tsc ESM to dist/); cp not npm install to update engine in node_modules (rm -rf blocked by sandbox)
 - [SpecGuard Studio Phase 6](studio-phase6.md) — frontend transformed into 8-tab Studio; StudioContext shares RunDiffResult across tabs; toHTML needs DiffResult not ContractDiffReport
+- [WebView Phase 7](webview-phase7.md) — --webview mode; WebViewServer in dist/webview/; re-runs engine in browser; 19/19 validation checks pass

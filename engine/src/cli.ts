@@ -1,4 +1,5 @@
-import { readFileSync, writeFileSync } from 'fs'
+#!/usr/bin/env node
+import { readFileSync, writeFileSync, existsSync } from 'fs'
 import { parseContract } from './parsers/openapi.js'
 import { compareContracts } from './compare/contracts.js'
 import { generateReport } from './report/ReportGenerator.js'
@@ -86,6 +87,7 @@ if (args.includes('--help') || args.includes('-h') || args.length === 0) {
   process.exit(ExitCode.OK)
 }
 
+const useWebView   = args.includes('--webview')
 const failOnHigh   = args.includes('--fail-on-high')
 const failOnMedium = args.includes('--fail-on-medium')
 const useJSON      = args.includes('--json')
@@ -100,11 +102,15 @@ const outputFile = outputIdx !== -1 ? args[outputIdx + 1] : undefined
 const configIdx  = args.indexOf('--config')
 const configArg  = configIdx !== -1 ? args[configIdx + 1] : undefined
 
+const portIdx = args.indexOf('--port')
+const portArg = portIdx !== -1 ? parseInt(args[portIdx + 1] ?? '4321', 10) : 4321
+
 // Collect positional args (skip flags and their values)
 const skipNext = new Set<number>()
 if (formatIdx !== -1) { skipNext.add(formatIdx); skipNext.add(formatIdx + 1) }
 if (outputIdx !== -1) { skipNext.add(outputIdx); skipNext.add(outputIdx + 1) }
 if (configIdx !== -1) { skipNext.add(configIdx); skipNext.add(configIdx + 1) }
+if (portIdx   !== -1) { skipNext.add(portIdx);   skipNext.add(portIdx + 1) }
 
 const positional = args.filter(
   (a, i) => !a.startsWith('--') && !skipNext.has(i)
@@ -152,6 +158,40 @@ try {
   const report     = generateReport(diffResult, govConfig ?? undefined, resolvedConfigPath ?? undefined)
   const exitCode   = determineExitCode(report, { failOnHigh, failOnMedium })
 
+  // ── WebView mode ────────────────────────────────────────────────────────────
+  if (useWebView) {
+    console.log(toConsoleReport(report))
+
+    // Read raw governance YAML so the browser can re-parse + re-run the engine
+    let governanceConfigYaml: string | undefined
+    if (resolvedConfigPath && existsSync(resolvedConfigPath)) {
+      try { governanceConfigYaml = readFileSync(resolvedConfigPath, 'utf-8') } catch { /* non-fatal */ }
+    }
+
+    // Dynamic import keeps server deps out of the hot path for non-webview runs
+    const { startWebViewServer } = await import('./webview/WebViewServer.js')
+    await startWebViewServer({
+      preferredPort: portArg,
+      data: {
+        oldContract: oldRaw,
+        newContract: newRaw,
+        governanceConfigYaml,
+        meta: {
+          oldPath,
+          newPath,
+          configPath: resolvedConfigPath ?? undefined,
+          engineVersion: TOOL_VERSION,
+          reportGeneratedAt: report.generatedAt,
+          riskLevel: report.riskLevel,
+          riskScore: report.riskScore,
+          breakingCount: report.summary.breaking,
+        },
+      },
+    })
+    process.exit(exitCode)
+  }
+
+  // ── Standard output ─────────────────────────────────────────────────────────
   let output: string
   switch (format) {
     case 'json':

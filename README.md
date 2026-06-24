@@ -1,4 +1,4 @@
-# API Contract Diff
+# SpecGuard
 
 > Detect breaking and non-breaking changes between OpenAPI/Swagger API versions — instantly.
 
@@ -26,9 +26,10 @@ Undetected API breaking changes are one of the most common causes of production 
 - **Breaking / non-breaking classification** — at a glance
 - **YAML and JSON input** — supports OpenAPI 3.0 specs
 - **CLI** — pipe it into CI, pre-push hooks, or release scripts
-- **React demo dashboard** — load sample scenarios in under 10 seconds
-- **Local engine, global-ready** — runs fully offline; structured for npm package swap later
-- **JSON, Markdown, and console output** — use the format you need
+- **`--webview`** — launch SpecGuard Studio locally in the browser with one flag
+- **SpecGuard Studio** — 8-tab interactive dashboard; runs fully client-side (zero backend)
+- **Governance** — approve, suppress, and expire findings with `specguard.yml`
+- **JSON, Markdown, HTML, and console output** — all from the same `ContractDiffReport`
 
 ## Architecture
 
@@ -36,21 +37,66 @@ Undetected API breaking changes are one of the most common causes of production 
 /engine                    — TypeScript diff engine (zero runtime deps in compare logic)
   /src
     /models/types.ts       — shared type definitions
-    /parsers/openapi.ts    — YAML / JSON spec parser (CLI use)
+    /parsers/openapi.ts    — YAML / JSON spec parser
     /rules/severity.ts     — change type → severity + breaking mapping
     /compare/contracts.ts  — core diff algorithm
-    /reporters/            — console, JSON, markdown output formatters
+    /reporters/            — console, JSON, markdown, HTML output formatters
+    /governance/           — SpecGuardConfig, ApprovalEngine, SuppressionEngine
+    /webview/              — local HTTP server for --webview mode (Node.js built-ins only)
+    /github-action/        — PR comment renderer, exit code docs
     index.ts               — public API exports
-    cli.ts                 — CLI entry point
-  /tests/compare.test.ts   — test suite (Node built-in test runner)
+    cli.ts                 — CLI entry point (bin: specguard)
+  /assets/webview/         — compiled React frontend (populated by build-release.sh)
+  /tests/                  — test suite (Node built-in test runner)
 
-/frontend                  — React + Vite demo dashboard (port 5000)
+/frontend                  — SpecGuard Studio (React 19 + Vite + Tailwind CSS 4)
   /src
     /engine/adapter.ts     — adapter layer (local engine, future global package)
+    /context/StudioContext — shared RunDiffResult + WebView detection across all tabs
     /data/samples.ts       — 3 bundled sample scenario pairs
-    /components/           — Header, SummaryCards, ChangesList, ScenarioPicker, ContractPreview
-    /pages/Home.tsx        — main dashboard page
+    /components/           — Header, SummaryCards, WebViewBanner, etc.
+    /pages/                — 8 Studio tabs
+
+/scripts
+  build-release.sh         — full release build pipeline
+  validate-package.ts      — pre-publish artifact verification
 ```
+
+## WebView Mode
+
+`--webview` launches SpecGuard Studio — the full 8-tab interactive dashboard — in your browser, pre-loaded with the diff results of your two contracts. No manual uploads required.
+
+```bash
+# Basic — analyze and open Studio in browser
+npx specguard old.yaml new.yaml --webview
+
+# With governance config
+npx specguard old.yaml new.yaml --webview --config specguard.yml
+
+# Custom port
+npx specguard old.yaml new.yaml --webview --port 3000
+```
+
+**What happens:**
+1. SpecGuard parses and diffs both contracts
+2. Prints a console summary
+3. Starts a local HTTP server (default port 4321)
+4. Opens your browser automatically
+5. Studio loads with all 8 tabs populated and ready
+
+**All Studio tabs work in WebView mode:**
+- Contract Playground — diff view, contract text, scenario picker
+- Report Explorer — full `ContractDiffReport` in rendered/JSON/schema views
+- Governance Lab — edit `specguard.yml` live and re-apply
+- GitHub Action — CI/CD config preview with exit codes
+- PR Comment — rendered Markdown preview
+- CLI Builder — build and copy CLI commands
+- Output Explorer — console, JSON, Markdown, HTML output
+- Architecture — system design overview
+
+**WebView banner:** A slim banner at the top of Studio shows the source files, engine version, risk level, and timestamp. It can be dismissed.
+
+**Fallback:** If the browser cannot be opened automatically, the server URL is printed to the terminal and Studio stays alive until Ctrl+C.
 
 ## Supported Diff Rules
 
@@ -107,16 +153,33 @@ cd frontend && npm run dev
 ```bash
 cd engine
 
-# Compare two spec files
-npx tsx src/cli.ts path/to/old.yaml path/to/new.yaml
+# Console diff (development mode — runs TypeScript directly)
+npx tsx src/cli.ts old.yaml new.yaml
+
+# WebView mode — open Studio in browser
+npx tsx src/cli.ts old.yaml new.yaml --webview
 
 # Output as JSON
-npx tsx src/cli.ts old.yaml new.yaml --format json
+npx tsx src/cli.ts old.yaml new.yaml --json
 
 # Output as Markdown
 npx tsx src/cli.ts old.yaml new.yaml --format markdown
 
-# Exit code: 0 = no breaking changes, 1 = breaking changes found, 2 = parse error
+# With governance config
+npx tsx src/cli.ts old.yaml new.yaml --config specguard.yml
+```
+
+### 4. Release build (for WebView and packaging)
+
+```bash
+# Build engine + frontend + copy assets
+./scripts/build-release.sh
+
+# Also run npm pack
+./scripts/build-release.sh --pack
+
+# Validate the package is ready
+npx tsx scripts/validate-package.ts
 ```
 
 ### 4. Run tests

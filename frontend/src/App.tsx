@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Header } from './components/Header'
+import { WebViewBanner } from './components/WebViewBanner'
 import { StudioProvider } from './context/StudioContext'
 import { useStudio } from './context/StudioContext'
 import { ContractPlayground } from './pages/ContractPlayground'
@@ -28,7 +29,7 @@ const TABS: { id: TabId; label: string; shortLabel: string; icon: React.ElementT
 ]
 
 function StudioLayout() {
-  const { activeTab, navigateTo } = useStudio()
+  const { activeTab, navigateTo, isWebViewMode, webViewMeta } = useStudio()
 
   useEffect(() => {
     const theme = localStorage.getItem('acd_theme')
@@ -45,6 +46,7 @@ function StudioLayout() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col w-full transition-colors duration-200">
+      {isWebViewMode && webViewMeta && <WebViewBanner meta={webViewMeta} />}
       <Header />
 
       <div className="flex flex-1 min-h-0">

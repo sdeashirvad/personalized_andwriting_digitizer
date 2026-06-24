@@ -12,13 +12,18 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "bin": {
+    "specguard": "./dist/cli.js"
+  },
   "files": [
     "dist/**/*",
+    "assets/**/*",
     "README.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "cli": "tsx src/cli.ts",
+    "cli:webview": "tsx src/cli.ts --webview",
     "test:node": "tsx --test tests/*.test.ts"
   },
   "dependencies": {
@@ -28,6 +33,6 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.0.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   }
 }

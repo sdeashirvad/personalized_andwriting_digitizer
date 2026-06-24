@@ -1,0 +1,312 @@
+PHASE 7 — WEBVIEW MODE & RELEASE PACKAGING
+
+IMPORTANT
+
+This is the final planned feature before release hardening.
+
+Do NOT redesign Studio.
+
+Do NOT add new diff rules.
+
+Do NOT modify governance logic.
+
+Do NOT implement SaaS features.
+
+Do NOT introduce mock data.
+
+The goal is to transform SpecGuard Studio into a reusable local WebView that ships with the engine.
+
+==================================================
+PRIMARY GOAL
+============
+
+Implement:
+
+npx specguard old.yaml new.yaml --webview
+
+Expected experience:
+
+1. Engine analyzes contracts
+2. ContractDiffReport is generated
+3. Local server starts
+4. Browser opens automatically
+5. User interacts with full SpecGuard Studio
+
+==================================================
+ARCHITECTURE (MANDATORY)
+
+Keep source separation.
+
+Current structure:
+
+root/
+
+engine/
+
+frontend/
+
+Do NOT move React source into engine.
+
+React source remains entirely inside:
+
+frontend/
+
+During release packaging only:
+
+frontend/dist
+
+must be copied into:
+
+engine/assets/webview/
+
+The engine should never depend on React source.
+
+Only on compiled static assets.
+
+==================================================
+STEP 1 — RELEASE BUILD PIPELINE
+
+Implement a release build process.
+
+Pipeline:
+
+Build Engine
+
+↓
+
+Build Frontend
+
+↓
+
+Copy:
+
+frontend/dist
+
+↓
+
+engine/assets/webview/
+
+↓
+
+Package engine
+
+The copy should happen only during packaging.
+
+Development should continue using separate frontend and engine projects.
+
+==================================================
+STEP 2 — WEBVIEW COMMAND
+
+Add CLI support:
+
+--webview
+
+Flow:
+
+Parse contracts
+
+↓
+
+Generate ContractDiffReport
+
+↓
+
+Write temporary report.json
+
+↓
+
+Launch local HTTP server
+
+↓
+
+Serve:
+
+engine/assets/webview
+
+↓
+
+Inject report.json
+
+↓
+
+Open browser automatically
+
+==================================================
+STEP 3 — LOCAL SERVER
+
+Use a lightweight HTTP server.
+
+Requirements:
+
+No heavy backend framework.
+
+Serve:
+
+Static frontend assets
+
+Generated report.json
+
+Health endpoint
+
+Automatic port selection if default port is unavailable.
+
+Display:
+
+Running at:
+
+[http://localhost:xxxx](http://localhost:xxxx)
+
+==================================================
+STEP 4 — REPORT LOADING
+
+The Studio should detect WebView mode.
+
+Load report.json automatically.
+
+No user interaction required.
+
+All tabs should display the generated report immediately.
+
+==================================================
+STEP 5 — WEBVIEW UX
+
+Add:
+
+Banner:
+
+Running in Local WebView
+
+Display:
+
+Current report location
+
+Engine version
+
+Report version
+
+Analysis timestamp
+
+==================================================
+STEP 6 — FALLBACKS
+
+If browser cannot open automatically:
+
+Display URL.
+
+If report generation fails:
+
+Show friendly error page.
+
+If frontend assets missing:
+
+Display instructions.
+
+==================================================
+STEP 7 — PACKAGING
+
+Ensure:
+
+npm pack
+
+contains:
+
+engine
+
+CLI
+
+compiled assets
+
+webview assets
+
+No React source.
+
+No node_modules.
+
+No unnecessary files.
+
+==================================================
+STEP 8 — PACKAGE VALIDATION
+
+Create:
+
+scripts/
+
+validate-package.ts
+
+Verify:
+
+Compiled assets exist
+
+Report loads
+
+Static assets served
+
+CLI launches
+
+WebView launches
+
+==================================================
+STEP 9 — DOCUMENTATION
+
+Update README.
+
+Document:
+
+--webview
+
+Release packaging
+
+Architecture
+
+Development workflow
+
+Difference between:
+
+Development Mode
+
+Release Mode
+
+==================================================
+STEP 10 — VALIDATION
+
+Run:
+
+npm install
+
+npm test
+
+npm run build
+
+npm pack
+
+Verify:
+
+CLI works
+
+Studio works
+
+WebView launches
+
+Browser opens
+
+Report loads
+
+All Studio tabs function
+
+Compiled assets copied correctly
+
+No React source included in published package
+
+Provide:
+
+Files created
+
+Files modified
+
+Package contents
+
+Build results
+
+Validation results
+
+Remaining work before v0.1.0 release
