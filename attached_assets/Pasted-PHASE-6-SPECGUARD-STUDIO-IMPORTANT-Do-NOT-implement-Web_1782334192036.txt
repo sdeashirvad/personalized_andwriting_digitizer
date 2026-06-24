@@ -1,0 +1,397 @@
+PHASE 6 — SPECGUARD STUDIO
+
+IMPORTANT
+
+Do NOT implement WebView yet.
+
+Do NOT move frontend source into engine/.
+
+Do NOT duplicate UI code.
+
+The existing React + Vite application should evolve into a comprehensive developer experience portal called:
+
+SpecGuard Studio
+
+This Studio will eventually become:
+
+1. Public demo site
+2. Portfolio demonstration
+3. Internal testing surface
+4. Future WebView frontend
+
+The frontend must continue consuming the real packaged engine (tarball/local package) rather than mock implementations.
+
+==================================================
+PRIMARY GOAL
+============
+
+Transform the current dashboard into a complete interactive showcase of every major SpecGuard capability.
+
+The UI should make it possible for someone unfamiliar with the project to understand the entire product within 2–3 minutes.
+
+==================================================
+TAB 1 — CONTRACT PLAYGROUND
+===========================
+
+Retain and improve existing functionality.
+
+Support:
+
+* Sample contracts
+* Paste YAML
+* Paste JSON
+* Upload YAML
+* Upload JSON
+
+Display:
+
+* Risk score
+* Risk level
+* Breaking changes
+* Non-breaking changes
+* Impact analysis
+* Governance summary
+
+Add:
+
+* Better validation messages
+* Copy results
+* Reset workflow
+
+==================================================
+TAB 2 — REPORT EXPLORER
+=======================
+
+Purpose:
+
+Demonstrate ContractDiffReport.
+
+Display:
+
+Rendered View
+
+Raw JSON View
+
+Schema View
+
+Requirements:
+
+* Toggle between views
+* Syntax highlighting
+* Copy JSON button
+* Download report.json
+
+Show:
+
+reportVersion
+
+toolVersion
+
+generatedAt
+
+summary
+
+changes
+
+impacts
+
+governance
+
+==================================================
+TAB 3 — GOVERNANCE LAB
+======================
+
+Purpose:
+
+Demonstrate governance capabilities interactively.
+
+Allow editing:
+
+specguard.yml
+
+within the browser.
+
+Provide examples:
+
+* approval
+* suppression
+* expiration
+* ownership
+
+When config changes:
+
+Regenerate report immediately.
+
+Display:
+
+Approved
+
+Suppressed
+
+Expired
+
+Unapproved
+
+Show governance reasoning.
+
+Display:
+
+Owner
+
+Approved By
+
+Reason
+
+Expiration
+
+==================================================
+TAB 4 — GITHUB ACTION PLAYGROUND
+================================
+
+Purpose:
+
+Demonstrate CI/CD integration.
+
+Display:
+
+Example GitHub workflow.
+
+Allow toggling:
+
+fail-on-high
+
+fail-on-medium
+
+comment-mode
+
+config-path
+
+Show:
+
+Expected outputs
+
+Expected exit code
+
+Generated report summary
+
+Use actual engine outputs.
+
+==================================================
+TAB 5 — PR COMMENT PREVIEW
+==========================
+
+Purpose:
+
+Demonstrate generated GitHub comments.
+
+Allow switching:
+
+off
+
+summary
+
+full
+
+Display:
+
+Rendered Markdown Preview
+
+Raw Markdown
+
+Copy Markdown
+
+Show governance-aware comments.
+
+==================================================
+TAB 6 — CLI BUILDER
+===================
+
+Purpose:
+
+Help users discover commands.
+
+Allow toggling:
+
+JSON output
+
+Output file
+
+Fail on High
+
+Fail on Medium
+
+Config path
+
+Generate:
+
+CLI command
+
+Examples:
+
+npx specguard old.yaml new.yaml --json
+
+npx specguard old.yaml new.yaml --fail-on-high
+
+Provide:
+
+Copy command button
+
+==================================================
+TAB 7 — OUTPUT EXPLORER
+=======================
+
+Purpose:
+
+Demonstrate all output formats from the same report.
+
+Display:
+
+Console Output
+
+JSON Output
+
+Markdown Output
+
+HTML Output
+
+Side-by-side comparison.
+
+Requirements:
+
+All views must originate from the same ContractDiffReport.
+
+==================================================
+TAB 8 — ARCHITECTURE VIEW
+=========================
+
+Purpose:
+
+Explain system design.
+
+Create a professional architecture page.
+
+Show:
+
+Old Contract
+↓
+Diff Engine
+↓
+Risk Engine
+↓
+Impact Engine
+↓
+Governance Engine
+↓
+ContractDiffReport
+↓
+├── CLI
+├── JSON
+├── HTML
+├── PR Comments
+├── GitHub Action
+└── Future WebView
+
+Explain each stage.
+
+This section should be suitable for technical interviews and portfolio reviews.
+
+==================================================
+DESIGN REQUIREMENTS
+===================
+
+The Studio should feel like:
+
+* Stripe Dashboard
+* Linear
+* Vercel
+* GitHub
+
+Characteristics:
+
+* clean
+* premium
+* minimal
+* mobile responsive
+* excellent spacing
+* excellent typography
+* keyboard friendly
+
+Avoid:
+
+* flashy animations
+* gimmicks
+* excessive gradients
+
+==================================================
+ENGINE INTEGRATION REQUIREMENTS
+===============================
+
+Frontend must continue consuming:
+
+Real packaged engine
+
+Do NOT create mock diff engines.
+
+Do NOT duplicate logic in React.
+
+All outputs should be generated from:
+
+ContractDiffReport
+
+==================================================
+TESTING REQUIREMENTS
+====================
+
+Before stopping:
+
+Verify:
+
+npm install
+
+npm run build
+
+npm test
+
+Frontend compiles
+
+All tabs render
+
+All tabs work on mobile viewport
+
+No TypeScript errors
+
+No console errors
+
+Verify:
+
+Report Explorer uses real reports
+
+Governance Lab updates results
+
+CLI Builder generates valid commands
+
+PR Preview renders correctly
+
+GitHub Action Playground shows real output examples
+
+==================================================
+DELIVERABLE
+===========
+
+Provide:
+
+Files created
+
+Files modified
+
+Screens/pages added
+
+New navigation structure
+
+Build results
+
+TypeScript validation results
+
+Mobile responsiveness validation
+
+Outstanding items for future WebView phase
