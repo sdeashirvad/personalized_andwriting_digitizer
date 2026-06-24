@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useStudio } from '../context/StudioContext'
+import { useStudio } from '../context/useStudio'
 import { toMarkdownReport, toConsoleReport, generateHTMLReport, generateJSONReport } from '../engine/adapter'
 import { Layers, Copy, CheckCheck, Download, FlaskConical } from 'lucide-react'
 

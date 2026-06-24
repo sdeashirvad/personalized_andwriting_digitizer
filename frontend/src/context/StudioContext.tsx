@@ -1,9 +1,8 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
-import { runDiff } from '../engine/adapter'
-import type { RunDiffResult, SpecGuardConfig } from '../engine/adapter'
+import { runDiff, reconstructFromReport } from '../engine/adapter'
+import type { RunDiffResult, SpecGuardConfig, ContractDiffReport } from '../engine/adapter'
 import { SCENARIOS } from '../data/samples'
 import type { TabId } from '../types'
-import { load as yamlLoad } from 'js-yaml'
 
 export interface WebViewMeta {
   oldPath: string
@@ -17,9 +16,9 @@ export interface WebViewMeta {
 }
 
 interface WebViewData {
-  oldContract: string
-  newContract: string
-  governanceConfigYaml?: string
+  report: ContractDiffReport
+  oldContract?: string
+  newContract?: string
   meta: WebViewMeta
 }
 
@@ -40,7 +39,7 @@ interface StudioContextValue {
   webViewMeta: WebViewMeta | null
 }
 
-const StudioContext = createContext<StudioContextValue | null>(null)
+export const StudioContext = createContext<StudioContextValue | null>(null)
 
 export function StudioProvider({ children }: { children: React.ReactNode }) {
   const defaultScenario = SCENARIOS[1]!
@@ -82,7 +81,7 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // ── WebView mode: detect injection from the local server and load contracts ──
+  // ── WebView mode: receive engine-produced ContractDiffReport from the server ─
   useEffect(() => {
     if (!(window as any).__SPECGUARD_WEBVIEW__) return
 
@@ -92,21 +91,12 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
         return r.json() as Promise<WebViewData>
       })
       .then((data) => {
-        let gov: SpecGuardConfig | undefined
-        if (data.governanceConfigYaml) {
-          try {
-            gov = yamlLoad(data.governanceConfigYaml) as SpecGuardConfig
-          } catch { /* governance config parse error — run without it */ }
-        }
-        const r = runDiff({
-          oldContract: data.oldContract,
-          newContract: data.newContract,
-          governanceConfig: gov,
-        })
+        // Reconstruct RunDiffResult from the engine-produced report.
+        // No re-execution of the diff engine — the report IS the authoritative result.
+        const r = reconstructFromReport(data.report)
         setResult(r)
-        setOldContractText(data.oldContract)
-        setNewContractText(data.newContract)
-        setGovernanceConfig(gov)
+        if (data.oldContract) setOldContractText(data.oldContract)
+        if (data.newContract) setNewContractText(data.newContract)
         setIsWebViewMode(true)
         setWebViewMeta(data.meta)
       })
@@ -133,8 +123,3 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function useStudio() {
-  const ctx = useContext(StudioContext)
-  if (!ctx) throw new Error('useStudio must be used inside StudioProvider')
-  return ctx
-}

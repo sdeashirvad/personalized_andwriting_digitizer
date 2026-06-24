@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useStudio } from '../context/StudioContext'
+import { useStudio } from '../context/useStudio'
 import { generatePRComment } from '../engine/adapter'
 import type { PRCommentMode } from '../engine/adapter'
 import { MessageSquare, Eye, Code2, Copy, CheckCheck, Download, FlaskConical } from 'lucide-react'

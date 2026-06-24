@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useStudio } from '../context/StudioContext'
+import { useStudio } from '../context/useStudio'
 import { determineExitCode } from '../engine/adapter'
 import { Terminal, Copy, CheckCheck, Download } from 'lucide-react'
 

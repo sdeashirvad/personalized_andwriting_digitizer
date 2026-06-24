@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useStudio } from '../context/StudioContext'
+import { useStudio } from '../context/useStudio'
 import { runDiff } from '../engine/adapter'
 import type { SpecGuardConfig, RunDiffResult } from '../engine/adapter'
 import { GovernancePanel } from '../components/GovernancePanel'

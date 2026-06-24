@@ -109,3 +109,36 @@ export function generateHTMLReport(r: RunDiffResult): string {
 export function generateJSONReport(diffResult: RunDiffResult): string {
   return toJSONReport(diffResult.report)
 }
+
+/**
+ * Reconstruct a RunDiffResult from a ContractDiffReport that was produced
+ * by the engine (e.g. in CLI / WebView mode). Does NOT re-run the diff.
+ * The report is the authoritative source of truth.
+ */
+export function reconstructFromReport(report: ContractDiffReport): RunDiffResult {
+  const diffResult: DiffResult = {
+    changes: report.changes,
+    summary: report.summary,
+    metadata: report.metadata,
+  }
+  const riskScore: RiskScore = {
+    score: report.riskScore,
+    category: report.riskLevel,
+    breakdown: report.riskBreakdown,
+    topContributors: report.changes.filter(c => c.breaking).slice(0, 5),
+  }
+  return {
+    report,
+    diffResult,
+    result: {
+      summary: report.summary,
+      changes: report.changes,
+      metadata: report.metadata,
+    },
+    riskScore,
+    impactReports: report.impacts,
+    engineMode: ENGINE_MODE,
+    engineVersion: report.toolVersion,
+    durationMs: 0,
+  }
+}

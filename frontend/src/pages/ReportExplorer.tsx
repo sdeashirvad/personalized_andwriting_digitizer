@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useStudio } from '../context/StudioContext'
+import { useStudio } from '../context/useStudio'
 import { generateJSONReport } from '../engine/adapter'
 import { TabBtn } from '../components/TabBtn'
 import { FileJson, Eye, Code2, BookOpen, Copy, CheckCheck, Download, FlaskConical } from 'lucide-react'

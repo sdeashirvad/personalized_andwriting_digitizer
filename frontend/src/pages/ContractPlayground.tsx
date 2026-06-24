@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { SCENARIOS } from '../data/samples'
 import { runDiff, generateHTMLReport, determineExitCode } from '../engine/adapter'
-import { useStudio } from '../context/StudioContext'
+import { useStudio } from '../context/useStudio'
 import { ScenarioPicker } from '../components/ScenarioPicker'
 import { SummaryCards } from '../components/SummaryCards'
 import { ChangesList } from '../components/ChangesList'

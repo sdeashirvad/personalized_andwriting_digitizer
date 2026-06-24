@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
 import { parseContract } from './parsers/openapi.js'
 import { compareContracts } from './compare/contracts.js'
 import { generateReport } from './report/ReportGenerator.js'
@@ -162,20 +162,17 @@ try {
   if (useWebView) {
     console.log(toConsoleReport(report))
 
-    // Read raw governance YAML so the browser can re-parse + re-run the engine
-    let governanceConfigYaml: string | undefined
-    if (resolvedConfigPath && existsSync(resolvedConfigPath)) {
-      try { governanceConfigYaml = readFileSync(resolvedConfigPath, 'utf-8') } catch { /* non-fatal */ }
-    }
-
     // Dynamic import keeps server deps out of the hot path for non-webview runs
     const { startWebViewServer } = await import('./webview/WebViewServer.js')
     await startWebViewServer({
       preferredPort: portArg,
       data: {
+        // Send the engine-produced report — the browser will call
+        // reconstructFromReport() and never re-execute the diff.
+        report,
+        // Include raw contract text so the Playground can display it.
         oldContract: oldRaw,
         newContract: newRaw,
-        governanceConfigYaml,
         meta: {
           oldPath,
           newPath,

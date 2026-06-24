@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useStudio } from '../context/StudioContext'
+import { useStudio } from '../context/useStudio'
 import { determineExitCode, ExitCode, toMarkdownReport } from '../engine/adapter'
 import type { ExitCodeValue, PRCommentMode } from '../engine/adapter'
 import { GitBranch, AlertCircle, CheckCircle2, XCircle, Copy, CheckCheck, Download, FlaskConical } from 'lucide-react'

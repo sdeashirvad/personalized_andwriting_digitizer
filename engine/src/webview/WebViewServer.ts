@@ -2,8 +2,8 @@
  * WebViewServer — lightweight Node.js HTTP server for `--webview` mode.
  *
  * Serves the compiled SpecGuard Studio frontend from engine/assets/webview/
- * and injects the analyzed contract data so the browser can re-run the engine
- * client-side with zero additional user interaction.
+ * and provides the engine-produced ContractDiffReport as /webview-data.json
+ * so the browser renders exactly what the engine computed — no re-execution.
  *
  * No external HTTP framework — uses Node.js built-in `http` only.
  */
@@ -35,15 +35,21 @@ const MIME: Record<string, string> = {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-/** Data passed from the CLI to the browser for client-side re-evaluation. */
+import type { ContractDiffReport } from '../report/ContractDiffReport.js'
+
+/**
+ * Data served as /webview-data.json.
+ * The browser deserializes `report` and calls reconstructFromReport() —
+ * it does NOT re-run the diff engine.
+ */
 export interface WebViewData {
-  /** Raw YAML or JSON text of the old contract */
-  oldContract: string
-  /** Raw YAML or JSON text of the new contract */
-  newContract: string
-  /** Raw YAML text of specguard.yml (if present) */
-  governanceConfigYaml?: string
-  /** CLI invocation info for display in the banner */
+  /** The engine-produced ContractDiffReport — authoritative, not re-computed. */
+  report: ContractDiffReport
+  /** Raw contract text for display in the Playground (optional). */
+  oldContract?: string
+  /** Raw contract text for display in the Playground (optional). */
+  newContract?: string
+  /** CLI invocation info for display in the WebView banner. */
   meta: {
     oldPath: string
     newPath: string
