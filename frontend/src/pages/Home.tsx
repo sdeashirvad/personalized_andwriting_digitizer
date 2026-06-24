@@ -10,6 +10,7 @@ import { RiskScoreCard } from '../components/RiskScoreCard'
 import { ImpactPanel } from '../components/ImpactPanel'
 import { PlaygroundMode } from '../components/PlaygroundMode'
 import { GitCompare, Download, FlaskConical, LayoutDashboard } from 'lucide-react'
+import { GovernancePanel } from '../components/GovernancePanel'
 
 type Tab = 'sample' | 'playground'
 
@@ -35,7 +36,11 @@ export function Home() {
     requestAnimationFrame(() => {
       try {
         const scenario = SCENARIOS[idx]!
-        const out = runDiff({ oldContract: scenario.oldContract, newContract: scenario.newContract })
+        const out = runDiff({
+          oldContract: scenario.oldContract,
+          newContract: scenario.newContract,
+          governanceConfig: scenario.governanceConfig,
+        })
         setSampleResult(out)
         setDurationMs(out.durationMs)
       } catch (e) {
@@ -175,6 +180,8 @@ export function Home() {
           </div>
 
           <ImpactPanel reports={activeResult.impactReports} />
+
+          <GovernancePanel report={activeResult.report} />
 
           <ContractPreview
             oldContract={oldContractText}

@@ -7,6 +7,7 @@ import { TOOL_VERSION } from './report/ReportVersion.js'
 import { toConsoleReport } from './reporters/console.js'
 import { toJSONReport } from './reporters/json.js'
 import { toMarkdownReport } from './reporters/markdown.js'
+import { loadConfig } from './governance/ConfigLoader.js'
 
 // ─── Help ─────────────────────────────────────────────────────────────────────
 
@@ -27,6 +28,8 @@ function printHelp(): void {
     --json              Output a structured JSON report (ContractDiffReport schema)
     --format <fmt>      Output format: console (default) | json | markdown
     --output <file>     Write output to a file instead of stdout
+    --config <file>     Path to specguard.yml governance config
+                        (defaults to ./specguard.yml if it exists)
     --fail-on-high      Only exit non-zero for HIGH/CRITICAL breaking changes;
                         MEDIUM/LOW breaking changes produce exit 0
     --fail-on-medium    Exit non-zero for any breaking change (default behaviour)
@@ -40,9 +43,16 @@ function printHelp(): void {
     3   One or more contract files are invalid / unparseable
     4   Unexpected internal error
 
+  Governance:
+    Place specguard.yml in your project root to approve changes and suppress findings.
+    See engine/docs/governance.md for the full config reference.
+
   Examples:
     # Human-readable console diff
     api-contract-diff old.yaml new.yaml
+
+    # With governance config
+    api-contract-diff old.yaml new.yaml --config specguard.yml
 
     # JSON report to stdout
     api-contract-diff old.yaml new.yaml --json
@@ -87,10 +97,14 @@ const format    = useJSON ? 'json' : (formatArg ?? 'console')
 const outputIdx  = args.indexOf('--output')
 const outputFile = outputIdx !== -1 ? args[outputIdx + 1] : undefined
 
+const configIdx  = args.indexOf('--config')
+const configArg  = configIdx !== -1 ? args[configIdx + 1] : undefined
+
 // Collect positional args (skip flags and their values)
 const skipNext = new Set<number>()
 if (formatIdx !== -1) { skipNext.add(formatIdx); skipNext.add(formatIdx + 1) }
 if (outputIdx !== -1) { skipNext.add(outputIdx); skipNext.add(outputIdx + 1) }
+if (configIdx !== -1) { skipNext.add(configIdx); skipNext.add(configIdx + 1) }
 
 const positional = args.filter(
   (a, i) => !a.startsWith('--') && !skipNext.has(i)
@@ -126,8 +140,16 @@ try {
     process.exit(ExitCode.INVALID_CONTRACT)
   }
 
+  // ── Load governance config ─────────────────────────────────────────────────
+  const { config: govConfig, configPath: resolvedConfigPath, error: configError } = loadConfig(configArg)
+
+  if (configError) {
+    console.error(`Governance config error: ${configError}`)
+    process.exit(ExitCode.INVALID_CONTRACT)
+  }
+
   const diffResult = compareContracts(oldSpec, newSpec)
-  const report     = generateReport(diffResult)
+  const report     = generateReport(diffResult, govConfig ?? undefined, resolvedConfigPath ?? undefined)
   const exitCode   = determineExitCode(report, { failOnHigh, failOnMedium })
 
   let output: string
@@ -145,7 +167,6 @@ try {
   if (outputFile) {
     writeFileSync(outputFile, output, 'utf-8')
     if (format !== 'json') {
-      // console format still goes to stdout when writing to file
       console.log(toConsoleReport(report))
     }
     console.log(`\n  Report written to: ${outputFile}`)

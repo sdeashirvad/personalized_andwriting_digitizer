@@ -3,6 +3,21 @@ import type { RiskCategory, RiskBreakdownItem } from '../rules/risk.js'
 import type { ImpactReport } from '../reporters/impact.js'
 import type { ReportVersionString } from './ReportVersion.js'
 
+/** Governance summary appended to ContractDiffReport when a SpecGuardConfig is provided */
+export interface GovernanceSummary {
+  enabled: boolean
+  /** Number of changes matched by a valid (non-expired) approval */
+  approved: number
+  /** Number of changes matched by an expired approval */
+  expired: number
+  /** Number of changes matched by a suppression rule */
+  suppressed: number
+  /** Number of breaking changes with no approval or suppression */
+  unapprovedBreaking: number
+  /** Path of the config file if loaded from disk */
+  configPath?: string
+}
+
 /**
  * ContractDiffReport is the canonical, versioned output of a diff run.
  * It is the single source of truth for:
@@ -39,9 +54,15 @@ export interface ContractDiffReport {
   /** Metadata about the two specs that were compared */
   metadata: DiffMetadata
 
-  /** Full list of detected changes */
+  /** Full list of detected changes (with optional governanceStatus when config is provided) */
   changes: DiffChange[]
 
   /** Consumer-facing impact analysis for every change */
   impacts: ImpactReport[]
+
+  /**
+   * Governance summary — present only when a SpecGuardConfig was supplied.
+   * Contains counts of approved, expired, suppressed, and unapproved changes.
+   */
+  governance?: GovernanceSummary
 }

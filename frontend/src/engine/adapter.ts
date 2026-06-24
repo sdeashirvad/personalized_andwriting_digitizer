@@ -11,10 +11,11 @@ import type {
   RiskScore,
   ImpactReport,
   RiskBreakdownItem,
+  SpecGuardConfig,
 } from '@api-contract-diff/engine'
 import { TOOL_VERSION } from '@api-contract-diff/engine'
 
-export type { ContractDiffReport, RiskScore, ImpactReport, RiskBreakdownItem }
+export type { ContractDiffReport, RiskScore, ImpactReport, RiskBreakdownItem, SpecGuardConfig }
 
 export type EngineMode = 'local' | 'global'
 export const ENGINE_MODE: EngineMode = 'local'
@@ -23,6 +24,8 @@ export const ENGINE_VERSION = TOOL_VERSION
 export interface RunDiffOptions {
   oldContract: string
   newContract: string
+  /** Optional in-memory governance config (browser equivalent of specguard.yml) */
+  governanceConfig?: SpecGuardConfig
 }
 
 export interface RunDiffResult {
@@ -67,8 +70,8 @@ export function runDiff(options: RunDiffOptions): RunDiffResult {
 
   const diffResult = compareContracts(oldSpec, newSpec)
 
-  // generateReport is now the canonical pipeline step
-  const report = generateReport(diffResult)
+  // generateReport is now the canonical pipeline step — governance config optional
+  const report = generateReport(diffResult, options.governanceConfig)
 
   // Compatibility shims for existing components
   const riskScore: RiskScore = {

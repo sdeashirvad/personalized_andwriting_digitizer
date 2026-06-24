@@ -35,6 +35,10 @@ export interface DiffChange {
   description: string
   oldValue?: unknown
   newValue?: unknown
+  /** Set by the governance engine when a SpecGuardConfig is provided */
+  governanceStatus?: GovernanceStatus
+  /** Approval ownership metadata — present when governanceStatus is APPROVED or EXPIRED */
+  governanceMetadata?: GovernanceApprovalMetadata
 }
 
 export interface DiffSummary {

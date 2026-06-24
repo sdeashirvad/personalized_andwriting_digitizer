@@ -23,6 +23,12 @@ export { calculateRiskScore, getRiskCategory, RISK_WEIGHTS } from './rules/risk.
 // ─── Impact analysis ──────────────────────────────────────────────────────────
 export { generateImpactReports, generateImpactReport } from './reporters/impact.js'
 
+// ─── Governance ───────────────────────────────────────────────────────────────
+export { applyGovernance } from './governance/GovernanceEngine.js'
+export { validateConfig } from './governance/SpecGuardConfig.js'
+export { matchPath, isExpired, matchesApproval, findApproval } from './governance/ApprovalEngine.js'
+export { matchesSuppression, isSuppressed, getSupportedRuleNames } from './governance/SuppressionEngine.js'
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type {
   OpenAPIContract,
@@ -32,11 +38,15 @@ export type {
   DiffMetadata,
   Severity,
   ChangeType,
+  GovernanceStatus,
+  GovernanceApprovalMetadata,
   Schema,
   PathItem,
   Operation,
 } from './models/types.js'
 export type { RiskScore, RiskCategory, RiskBreakdownItem } from './rules/risk.js'
 export type { ImpactReport } from './reporters/impact.js'
-export type { ContractDiffReport } from './report/ContractDiffReport.js'
+export type { ContractDiffReport, GovernanceSummary } from './report/ContractDiffReport.js'
 export type { ExitCodeValue, ExitCodeOptions } from './report/ExitCodes.js'
+export type { SpecGuardConfig, ApprovedChange, SuppressionRule } from './governance/SpecGuardConfig.js'
+export type { GovernanceResult } from './governance/GovernanceEngine.js'

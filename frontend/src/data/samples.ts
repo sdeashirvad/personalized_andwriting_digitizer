@@ -1,3 +1,5 @@
+import type { SpecGuardConfig } from '../engine/adapter'
+
 export interface SampleScenario {
   id: string
   label: string
@@ -6,6 +8,11 @@ export interface SampleScenario {
   tagColor: string
   oldContract: string
   newContract: string
+  /**
+   * Optional governance config for this scenario.
+   * Equivalent to specguard.yml — applied automatically when the scenario runs.
+   */
+  governanceConfig?: SpecGuardConfig
 }
 
 export const SCENARIOS: SampleScenario[] = [
@@ -358,6 +365,26 @@ paths:
       responses:
         "200":
           description: Inventory data`,
+
+    governanceConfig: {
+      approvedChanges: [
+        {
+          type: 'endpointRemoved',
+          path: '/products/{id}',
+          owner: 'platform-team',
+          approvedBy: 'architecture-board',
+          reason: 'Products endpoint sunset — consumers migrated to Catalog Service v2 at /catalog/items/{id}. See ADR-2026-04.',
+          expires: '2027-06-01',
+          createdAt: '2026-01-15',
+        },
+      ],
+      suppressions: [
+        {
+          rule: 'ENDPOINT_ADDED',
+          reason: 'New endpoints are additive and never break existing consumers.',
+        },
+      ],
+    },
   },
 
   {

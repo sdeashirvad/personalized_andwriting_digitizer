@@ -92,6 +92,60 @@ export function toConsoleReport(report: ContractDiffReport): string {
     lines.push('')
   }
 
+  // Governance summary (only when config was applied)
+  const g = report.governance
+  if (g) {
+    lines.push(c('  Governance Summary', C.bold, C.cyan))
+    lines.push(`  Approved Changes    : ${c(String(g.approved),          C.bold, C.green)}`)
+    lines.push(`  Expired Approvals   : ${c(String(g.expired),           C.bold, C.yellow)}`)
+    lines.push(`  Suppressed Findings : ${c(String(g.suppressed),        C.bold, C.gray)}`)
+    lines.push(`  Unapproved Breaking : ${c(String(g.unapprovedBreaking),C.bold, g.unapprovedBreaking > 0 ? C.red : C.green)}`)
+    if (g.configPath) lines.push(`  Config              : ${c(g.configPath, C.gray)}`)
+    lines.push('')
+
+    // List APPROVED changes with ownership metadata
+    const approved = changes.filter(ch => ch.governanceStatus === 'APPROVED')
+    if (approved.length > 0) {
+      lines.push(c('  Approved Changes', C.bold, C.green))
+      for (const ch of approved) {
+        const m = ch.method ? c(ch.method.toUpperCase(), C.bold) + ' ' : ''
+        lines.push(`    ${c('[APPROVED]', C.green, C.bold)} ${m}${c(ch.path, C.white)}`)
+        if (ch.governanceMetadata) {
+          const gm = ch.governanceMetadata
+          lines.push(`    ${c('  Owner:', C.gray)} ${gm.owner}  ${c('Approved by:', C.gray)} ${gm.approvedBy}`)
+          lines.push(`    ${c('  Reason:', C.gray)} ${gm.reason}`)
+          if (gm.expires) lines.push(`    ${c('  Expires:', C.gray)} ${gm.expires}`)
+        }
+      }
+      lines.push('')
+    }
+
+    // List EXPIRED approvals
+    const expired = changes.filter(ch => ch.governanceStatus === 'EXPIRED')
+    if (expired.length > 0) {
+      lines.push(c('  Expired Approvals ⚠', C.bold, C.yellow))
+      for (const ch of expired) {
+        const m = ch.method ? c(ch.method.toUpperCase(), C.bold) + ' ' : ''
+        lines.push(`    ${c('[EXPIRED]', C.yellow, C.bold)} ${m}${c(ch.path, C.white)}`)
+        if (ch.governanceMetadata?.expires) {
+          lines.push(`    ${c('  Expired:', C.yellow)} ${ch.governanceMetadata.expires}`)
+        }
+      }
+      lines.push('')
+    }
+
+    // List UNAPPROVED breaking changes
+    if (g.unapprovedBreaking > 0) {
+      lines.push(c('  Unapproved Breaking Changes', C.bold, C.red))
+      for (const ch of changes.filter(ch => ch.governanceStatus === 'UNAPPROVED')) {
+        const m = ch.method ? c(ch.method.toUpperCase(), C.bold) + ' ' : ''
+        lines.push(`    ${c('[UNAPPROVED]', C.red, C.bold)} ${m}${c(ch.path, C.white)}`)
+        lines.push(`    ${c('  Add an approvedChanges entry to specguard.yml to govern this change.', C.gray)}`)
+      }
+      lines.push('')
+    }
+  }
+
   return lines.join('\n')
 }
 
