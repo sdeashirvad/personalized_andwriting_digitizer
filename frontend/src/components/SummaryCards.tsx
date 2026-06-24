@@ -1,23 +1,29 @@
-import type { DiffResult } from '@api-contract-diff/engine'
 import { AlertTriangle, CheckCircle2, Layers, ShieldAlert } from 'lucide-react'
 
 interface Props {
-  result: DiffResult
+  result: {
+    summary: {
+      total: number
+      breaking: number
+      nonBreaking: number
+      bySeverity: { HIGH: number; MEDIUM: number; LOW: number; INFO?: number }
+    }
+  }
+  riskLevel: string
+  riskScore: number
 }
 
-export function SummaryCards({ result }: Props) {
-  const { summary } = result
-  const riskLevel =
-    summary.bySeverity.HIGH > 0 ? 'HIGH'
-    : summary.bySeverity.MEDIUM > 0 ? 'MEDIUM'
-    : summary.bySeverity.LOW > 0 ? 'LOW'
-    : 'NONE'
+const riskColors: Record<string, string> = {
+  NONE: 'text-emerald-500 dark:text-emerald-400',
+  LOW: 'text-blue-500 dark:text-blue-400',
+  MEDIUM: 'text-amber-500 dark:text-amber-400',
+  HIGH: 'text-red-500 dark:text-red-400',
+  CRITICAL: 'text-violet-500 dark:text-violet-400',
+}
 
-  const riskColor =
-    riskLevel === 'HIGH' ? 'text-red-500 dark:text-red-400'
-    : riskLevel === 'MEDIUM' ? 'text-amber-500 dark:text-amber-400'
-    : riskLevel === 'LOW' ? 'text-blue-500 dark:text-blue-400'
-    : 'text-emerald-500 dark:text-emerald-400'
+export function SummaryCards({ result, riskLevel, riskScore }: Props) {
+  const { summary } = result
+  const riskColor = riskColors[riskLevel] ?? 'text-zinc-500 dark:text-zinc-400'
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -43,10 +49,10 @@ export function SummaryCards({ result }: Props) {
         valueClass={summary.nonBreaking > 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-zinc-800 dark:text-zinc-100'}
       />
       <Card
-        icon={<ShieldAlert className="w-4 h-4" />}
+        icon={<ShieldAlert className={`w-4 h-4 ${riskColor}`} />}
         label="Severity Mix"
         value={riskLevel}
-        sub={`${summary.bySeverity.HIGH}H · ${summary.bySeverity.MEDIUM}M · ${summary.bySeverity.LOW}L`}
+        sub={`${riskScore} · ${summary.bySeverity.HIGH}H · ${summary.bySeverity.MEDIUM}M · ${summary.bySeverity.LOW}L`}
         valueClass={riskColor}
       />
     </div>

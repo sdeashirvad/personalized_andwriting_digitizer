@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useStudio } from '../context/StudioContext'
 import { determineExitCode, ExitCode, toMarkdownReport } from '../engine/adapter'
 import type { ExitCodeValue, PRCommentMode } from '../engine/adapter'
-import { GitBranch, AlertCircle, CheckCircle2, XCircle, Copy, CheckCheck } from 'lucide-react'
+import { GitBranch, AlertCircle, CheckCircle2, XCircle, Copy, CheckCheck, Download, FlaskConical } from 'lucide-react'
 
 const EXIT_LABELS: Record<number, string> = {
   0: 'OK — No breaking changes',
@@ -21,7 +21,7 @@ const EXIT_COLORS: Record<number, string> = {
 }
 
 export function GitHubActionPlayground() {
-  const { result } = useStudio()
+  const { result, navigateTo } = useStudio()
   const [failOnHigh, setFailOnHigh] = useState(true)
   const [failOnMedium, setFailOnMedium] = useState(false)
   const [commentMode, setCommentMode] = useState<PRCommentMode>('summary')
@@ -30,10 +30,7 @@ export function GitHubActionPlayground() {
 
   const exitCode: ExitCodeValue | null = useMemo(() => {
     if (!result) return null
-    return determineExitCode(result.report, {
-      failOnHigh,
-      failOnMedium,
-    })
+    return determineExitCode(result.report, { failOnHigh, failOnMedium })
   }, [result, failOnHigh, failOnMedium])
 
   const willFail = exitCode !== null && exitCode !== ExitCode.OK
@@ -75,6 +72,31 @@ jobs:
     })
   }
 
+  function downloadWorkflow() {
+    const blob = new Blob([workflowYaml], { type: 'text/yaml' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'api-check.yml'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  function downloadMarkdown() {
+    if (!markdownSummary) return
+    const blob = new Blob([markdownSummary], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'specguard-summary.md'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <div className="space-y-1">
@@ -87,7 +109,7 @@ jobs:
         </p>
       </div>
 
-      {!result && <NoReport />}
+      {!result && <NoReport onNavigate={() => navigateTo('playground')} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Config panel */}
@@ -139,7 +161,7 @@ jobs:
             </div>
           </div>
 
-          {/* Expected output */}
+          {/* Expected outcome */}
           {result && exitCode !== null && (
             <div className={`rounded-xl border p-5 space-y-3 ${
               willFail
@@ -171,43 +193,6 @@ jobs:
               </div>
             </div>
           )}
-        </div>
-
-        {/* Workflow YAML */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-950 overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800 bg-zinc-900">
-              <span className="text-xs font-mono text-zinc-400">.github/workflows/api-check.yml</span>
-              <button
-                onClick={() => copy(workflowYaml, 'workflow')}
-                className="flex items-center gap-1.5 text-[11px] text-zinc-400 hover:text-zinc-200 transition-colors"
-              >
-                {copied === 'workflow' ? <CheckCheck className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied === 'workflow' ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-            <pre className="p-5 text-[11px] font-mono leading-relaxed text-zinc-300 overflow-auto max-h-96">
-              {workflowYaml}
-            </pre>
-          </div>
-
-          {result && markdownSummary && (
-            <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-950 overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800 bg-zinc-900">
-                <span className="text-xs font-mono text-zinc-400">Generated Report Summary (Markdown)</span>
-                <button
-                  onClick={() => copy(markdownSummary, 'md')}
-                  className="flex items-center gap-1.5 text-[11px] text-zinc-400 hover:text-zinc-200 transition-colors"
-                >
-                  {copied === 'md' ? <CheckCheck className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copied === 'md' ? 'Copied!' : 'Copy'}
-                </button>
-              </div>
-              <pre className="p-5 text-[11px] font-mono leading-relaxed text-zinc-300 overflow-auto max-h-64">
-                {markdownSummary}
-              </pre>
-            </div>
-          )}
 
           {/* Action outputs table */}
           <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
@@ -223,14 +208,57 @@ jobs:
                 { key: 'total-count', value: result ? String(result.report.summary.total) : '—', desc: 'Total changes detected' },
                 { key: 'report-json', value: 'report.json', desc: 'Path to the generated machine-readable report artifact' },
               ].map(row => (
-                <div key={row.key} className="flex items-start gap-4 px-5 py-3">
-                  <code className="text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400 w-36 shrink-0">{row.key}</code>
-                  <code className="text-xs font-mono text-zinc-800 dark:text-zinc-200 w-20 shrink-0">{row.value}</code>
+                <div key={row.key} className="flex items-start gap-4 px-5 py-2.5">
+                  <code className="text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400 w-32 shrink-0">{row.key}</code>
+                  <code className="text-xs font-mono text-zinc-800 dark:text-zinc-200 w-16 shrink-0">{row.value}</code>
                   <p className="text-xs text-zinc-400 dark:text-zinc-500">{row.desc}</p>
                 </div>
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Workflow YAML + summary */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-950 overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800 bg-zinc-900">
+              <span className="text-xs font-mono text-zinc-400">.github/workflows/api-check.yml</span>
+              <div className="flex items-center gap-2">
+                <button onClick={downloadWorkflow} className="flex items-center gap-1.5 text-[11px] text-zinc-400 hover:text-zinc-200 transition-colors">
+                  <Download className="w-3.5 h-3.5" />
+                  Download
+                </button>
+                <button onClick={() => copy(workflowYaml, 'workflow')} className="flex items-center gap-1.5 text-[11px] text-zinc-400 hover:text-zinc-200 transition-colors">
+                  {copied === 'workflow' ? <CheckCheck className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copied === 'workflow' ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            </div>
+            <pre className="p-5 text-[11px] font-mono leading-relaxed text-zinc-300 overflow-auto max-h-96">
+              {workflowYaml}
+            </pre>
+          </div>
+
+          {result && markdownSummary && (
+            <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-950 overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800 bg-zinc-900">
+                <span className="text-xs font-mono text-zinc-400">Generated Report Summary (Markdown)</span>
+                <div className="flex items-center gap-2">
+                  <button onClick={downloadMarkdown} className="flex items-center gap-1.5 text-[11px] text-zinc-400 hover:text-zinc-200 transition-colors">
+                    <Download className="w-3.5 h-3.5" />
+                    .md
+                  </button>
+                  <button onClick={() => copy(markdownSummary, 'md')} className="flex items-center gap-1.5 text-[11px] text-zinc-400 hover:text-zinc-200 transition-colors">
+                    {copied === 'md' ? <CheckCheck className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied === 'md' ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+              </div>
+              <pre className="p-5 text-[11px] font-mono leading-relaxed text-zinc-300 overflow-auto max-h-64">
+                {markdownSummary}
+              </pre>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -240,9 +268,9 @@ jobs:
 function Toggle({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="flex items-start gap-3 cursor-pointer group">
-      <div className="relative mt-0.5">
+      <div className="relative mt-0.5 shrink-0">
         <input type="checkbox" className="sr-only" checked={checked} onChange={e => onChange(e.target.checked)} />
-        <div className={`w-8 h-4.5 rounded-full transition-colors ${checked ? 'bg-indigo-500' : 'bg-zinc-300 dark:bg-zinc-600'}`} style={{ height: '18px' }}>
+        <div className={`w-8 rounded-full transition-colors ${checked ? 'bg-indigo-500' : 'bg-zinc-300 dark:bg-zinc-600'}`} style={{ height: '18px' }}>
           <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-4' : 'translate-x-0.5'}`} />
         </div>
       </div>
@@ -254,11 +282,29 @@ function Toggle({ label, description, checked, onChange }: { label: string; desc
   )
 }
 
-function NoReport() {
+function NoReport({ onNavigate }: { onNavigate: () => void }) {
   return (
-    <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-5 py-4 text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
-      <AlertCircle className="w-4 h-4 shrink-0" />
-      No report loaded. Run an analysis in Contract Playground to see real engine output here.
+    <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
+      <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/60 flex items-center justify-center">
+        <GitBranch className="w-7 h-7 text-emerald-400 dark:text-emerald-500" />
+      </div>
+      <div className="space-y-1.5 max-w-sm">
+        <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">No report loaded</p>
+        <p className="text-xs text-zinc-400 dark:text-zinc-500">
+          This tab shows the expected CI outcome for your current report — exit codes, workflow YAML, and action outputs. Run an analysis first.
+        </p>
+        <p className="text-[11px] text-zinc-300 dark:text-zinc-600 mt-1">
+          The workflow YAML is always available below, even without a report.
+        </p>
+      </div>
+      <button
+        onClick={onNavigate}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+      >
+        <FlaskConical className="w-3.5 h-3.5" />
+        Go to Contract Playground
+      </button>
+      <AlertCircle className="w-0 h-0 hidden" />
     </div>
   )
 }

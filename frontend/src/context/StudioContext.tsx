@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useCallback } from 'react'
 import { runDiff } from '../engine/adapter'
 import type { RunDiffResult, SpecGuardConfig } from '../engine/adapter'
 import { SCENARIOS } from '../data/samples'
+import type { TabId } from '../types'
 
 interface StudioContextValue {
   result: RunDiffResult | null
@@ -14,6 +15,8 @@ interface StudioContextValue {
   setGovernanceConfig: (cfg: SpecGuardConfig | undefined) => void
   runAnalysis: (old: string, newC: string, gov?: SpecGuardConfig) => RunDiffResult
   error: string | null
+  activeTab: TabId
+  navigateTo: (tab: TabId) => void
 }
 
 const StudioContext = createContext<StudioContextValue | null>(null)
@@ -35,6 +38,11 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
   const [newContractText, setNewContractText] = useState(defaultScenario.newContract)
   const [governanceConfig, setGovernanceConfig] = useState<SpecGuardConfig | undefined>(defaultScenario.governanceConfig)
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<TabId>('playground')
+
+  const navigateTo = useCallback((tab: TabId) => {
+    setActiveTab(tab)
+  }, [])
 
   const runAnalysis = useCallback((old: string, newC: string, gov?: SpecGuardConfig): RunDiffResult => {
     setError(null)
@@ -59,6 +67,8 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
       governanceConfig, setGovernanceConfig,
       runAnalysis,
       error,
+      activeTab,
+      navigateTo,
     }}>
       {children}
     </StudioContext.Provider>

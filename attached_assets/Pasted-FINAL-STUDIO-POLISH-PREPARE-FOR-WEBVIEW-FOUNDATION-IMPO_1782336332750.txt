@@ -1,0 +1,353 @@
+FINAL STUDIO POLISH — PREPARE FOR WEBVIEW FOUNDATION
+
+IMPORTANT
+
+This is NOT a feature phase.
+
+Do NOT implement WebView.
+
+Do NOT implement Share Report.
+
+Do NOT modify the core engine.
+
+Do NOT introduce mock implementations.
+
+This phase is exclusively about turning the existing React application into the definitive SpecGuard Studio that will later power:
+
+* Public demo site
+* Portfolio demo
+* Internal testing surface
+* Future WebView UI
+
+==================================================
+PRIMARY GOAL
+============
+
+SpecGuard Studio should feel like a polished professional developer tool.
+
+Every interaction should feel intuitive.
+
+Every displayed result should originate from the real packaged engine.
+
+==================================================
+NON-NEGOTIABLE REQUIREMENT
+
+NO MOCK BUSINESS LOGIC
+
+The frontend MUST consume the packaged engine exactly like an external consumer.
+
+Continue using the generated tarball/local package.
+
+Allowed demo assets:
+
+* Sample OpenAPI contracts
+* Sample specguard.yml files
+* Sample workflows
+* Sample GitHub Action YAML
+
+NOT allowed:
+
+Mock ContractDiffReport
+
+Mock risk scores
+
+Mock governance
+
+Mock PR comments
+
+Mock CLI outputs
+
+Every displayed artifact must be generated from the real engine.
+
+==================================================
+TASK 1 — SINGLE SOURCE OF TRUTH
+
+Audit the entire Studio.
+
+Every tab must consume the same:
+
+RunDiffResult
+
+ContractDiffReport
+
+StudioContext
+
+Changing:
+
+contract
+
+governance config
+
+analysis options
+
+must update every page automatically.
+
+No duplicated calculations.
+
+No stale state.
+
+==================================================
+TASK 2 — STUDIO UX POLISH
+
+Improve discoverability.
+
+Reduce clicks.
+
+Improve information hierarchy.
+
+Improve transitions between tabs.
+
+Improve visual feedback.
+
+Examples:
+
+Loading indicators
+
+Success feedback
+
+Copy confirmation
+
+Better validation messages
+
+Keyboard shortcuts where appropriate
+
+Helpful tooltips for advanced concepts
+
+Context-aware hints
+
+The application should feel responsive and interactive without becoming flashy.
+
+==================================================
+TASK 3 — INTERACTIVE EXPERIENCE
+
+Increase interactivity across the Studio.
+
+Examples:
+
+Hovering a risk card highlights related findings.
+
+Selecting a change highlights:
+
+Impact
+
+Governance
+
+Report JSON
+
+PR comment
+
+where applicable.
+
+Selecting a governance rule highlights the affected findings.
+
+Risk summary cards should navigate to detailed sections.
+
+Architecture view should highlight pipeline stages interactively.
+
+Cross-link related information wherever possible.
+
+The goal is to help users understand the engine through interaction.
+
+==================================================
+TASK 4 — CONSISTENCY AUDIT
+
+Verify all pages display identical values for:
+
+Risk Score
+
+Risk Level
+
+Breaking Changes
+
+Governance
+
+Impact Count
+
+Exit Code
+
+Generated At
+
+Report Version
+
+Tool Version
+
+No page should compute its own values.
+
+==================================================
+TASK 5 — EMPTY STATES
+
+Every tab must have polished empty states.
+
+Explain:
+
+What this page demonstrates.
+
+How to generate a report.
+
+Use tasteful illustrations/placeholders where appropriate.
+
+==================================================
+TASK 6 — COPY & EXPORT
+
+Where appropriate provide:
+
+Copy
+
+Download
+
+Export
+
+Actions for:
+
+CLI commands
+
+Markdown
+
+JSON
+
+Workflow YAML
+
+Console output
+
+Generated HTML
+
+ContractDiffReport
+
+Provide lightweight confirmation after copy.
+
+==================================================
+TASK 7 — RESPONSIVENESS
+
+Verify all Studio pages for:
+
+Desktop
+
+Tablet
+
+Mobile
+
+Prevent:
+
+Horizontal scrolling
+
+Broken layouts
+
+Overflowing code blocks
+
+Collapsed navigation issues
+
+Touch interaction problems
+
+==================================================
+TASK 8 — STUDIO LANDING EXPERIENCE
+
+Improve the first impression.
+
+When Studio opens, immediately communicate project value.
+
+Provide a polished overview section showing:
+
+Current sample
+
+Risk Score
+
+Breaking Changes
+
+Governance Summary
+
+Generated At
+
+Tool Version
+
+Report Version
+
+Supported Outputs
+
+This should help a first-time visitor understand the product within 30 seconds.
+
+==================================================
+TASK 9 — PACKAGE INTEGRATION AUDIT
+
+Verify that every feature in Studio is powered by the packaged engine.
+
+Specifically verify:
+
+Diff generation
+
+Risk scoring
+
+Impact reports
+
+Governance
+
+Markdown generation
+
+Console output
+
+JSON output
+
+HTML generation
+
+PR comments
+
+Exit codes
+
+There should be no duplicated frontend implementations.
+
+==================================================
+TASK 10 — CODE QUALITY
+
+Identify and remove:
+
+Dead components
+
+Unused utilities
+
+Duplicate rendering logic
+
+Stale pages
+
+Obsolete adapters
+
+Simplify where possible without changing functionality.
+
+==================================================
+VALIDATION
+
+Before stopping:
+
+Run:
+
+npm install
+
+npm test
+
+npm run build
+
+Verify:
+
+Zero TypeScript errors
+
+Zero console errors
+
+Zero runtime warnings
+
+All Studio tabs work
+
+All pages consume the packaged engine
+
+Mobile responsive
+
+Provide:
+
+Files modified
+
+UX improvements made
+
+Interactivity improvements made
+
+Any duplicated logic removed
+
+Validation results
+
+List ONLY the remaining work required for the future WebView implementation.
