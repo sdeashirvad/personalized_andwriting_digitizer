@@ -1,4 +1,4 @@
-name: API Contract Diff (Strict)
+name: SpecSentinel (Strict)
 
 # Strict mode: any breaking change fails the build.
 # Use for APIs where all consumers are known and must be notified before any change.
@@ -9,7 +9,7 @@ on:
       - 'specs/**'
 
 jobs:
-  api-contract-diff:
+  specsentinel:
     name: Strict API Contract Check
     runs-on: ubuntu-latest
     permissions:
@@ -26,9 +26,9 @@ jobs:
         run: |
           git show origin/${{ github.base_ref }}:specs/openapi.yaml > /tmp/old-spec.yaml
 
-      - name: Run API Contract Diff (strict)
+      - name: Run SpecSentinel (strict)
         id: diff
-        uses: ./
+        uses: sdeashirvad/specsentinel@v1
         with:
           old-spec: /tmp/old-spec.yaml
           new-spec: specs/openapi.yaml

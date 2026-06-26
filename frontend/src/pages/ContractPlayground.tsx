@@ -21,6 +21,7 @@ type Tab = 'sample' | 'playground'
 
 export function ContractPlayground() {
   const studio = useStudio()
+  const { isWebViewMode, result: studioResult, oldContractText: studioOld, newContractText: studioNew } = studio
   const [tab, setTab] = useState<Tab>('sample')
   const [selectedIdx, setSelectedIdx] = useState(1)
   const [localResult, setLocalResult] = useState<RunDiffResult | null>(studio.result)
@@ -31,8 +32,18 @@ export function ContractPlayground() {
   const [playNewText, setPlayNewText] = useState('')
   const [copied, setCopied] = useState(false)
 
+  // WebView mode: studio context receives the engine report asynchronously — sync local UI state.
+  useEffect(() => {
+    if (!isWebViewMode || !studioResult) return
+    setLocalResult(studioResult)
+    setPlayOldText(studioOld)
+    setPlayNewText(studioNew)
+    setTab('playground')
+    setDurationMs(studioResult.durationMs)
+  }, [isWebViewMode, studioResult, studioOld, studioNew])
+
   const activeScenario = SCENARIOS[selectedIdx]!
-  const activeResult = localResult
+  const activeResult = isWebViewMode && studioResult ? studioResult : localResult
 
   const runSampleAnalysis = useCallback((idx: number) => {
     setIsRunning(true)
@@ -108,8 +119,16 @@ export function ContractPlayground() {
     })
   }
 
-  const oldContractText = tab === 'sample' ? activeScenario.oldContract : playOldText
-  const newContractText = tab === 'sample' ? activeScenario.newContract : playNewText
+  const oldContractText = isWebViewMode
+    ? studioOld
+    : tab === 'sample'
+      ? activeScenario.oldContract
+      : playOldText
+  const newContractText = isWebViewMode
+    ? studioNew
+    : tab === 'sample'
+      ? activeScenario.newContract
+      : playNewText
   const oldTitle = activeResult
     ? activeResult.result.metadata.oldTitle + ' v' + activeResult.result.metadata.oldVersion
     : 'Old Contract'

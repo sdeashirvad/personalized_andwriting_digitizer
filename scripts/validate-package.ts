@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * validate-package.ts — pre-release validation for the SpecGuard engine package.
+ * validate-package.ts — pre-release validation for the SpecSentinel engine package.
  *
  * Verifies that all required build artifacts are present and the package.json
  * is correctly configured for npm publish / npx usage.
@@ -40,7 +40,7 @@ function section(title: string): void {
 // ─── Validation ───────────────────────────────────────────────────────────────
 
 console.log('\n  ┌─────────────────────────────────────────────────┐')
-console.log('  │      SpecGuard Package Validation                │')
+console.log('  │      SpecSentinel Package Validation               │')
 console.log('  └─────────────────────────────────────────────────┘')
 
 // ── Engine dist artifacts ────────────────────────────────────────────────────
@@ -71,10 +71,10 @@ section('package.json configuration')
 const pkgPath = join(ENGINE, 'package.json')
 const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
 
-check('Has "bin.specguard" entry',                  !!pkg.bin?.specguard,
-  'Add: "bin": { "specguard": "./dist/cli.js" }')
-check('"bin.specguard" points to dist/cli.js',      pkg.bin?.specguard === './dist/cli.js',
-  `Got: ${pkg.bin?.specguard}`)
+check('Has "bin.specsentinel" entry',               !!pkg.bin?.specsentinel,
+  'Add: "bin": { "specsentinel": "./dist/cli.js" }')
+check('"bin.specsentinel" points to dist/cli.js',   pkg.bin?.specsentinel === './dist/cli.js',
+  `Got: ${pkg.bin?.specsentinel}`)
 check('"files" includes dist/**/*',                  (pkg.files ?? []).some((f: string) => f.includes('dist')),
   'Add "dist/**/*" to files array')
 check('"files" includes assets/**/*',                (pkg.files ?? []).some((f: string) => f.includes('assets')),
@@ -104,8 +104,8 @@ if (existsSync(indexPath)) {
   check('index.html has <div id="root">',            html.includes('id="root"'))
   check('index.html has </head> tag (for injection)', html.includes('</head>'))
   // The injected flag should NOT be in the source — it's added by the server at runtime
-  check('index.html does NOT pre-inject __SPECGUARD_WEBVIEW__',
-    !html.includes('__SPECGUARD_WEBVIEW__'))
+  check('index.html does NOT pre-inject __SPECSENTINEL_WEBVIEW__',
+    !html.includes('__SPECSENTINEL_WEBVIEW__'))
 } else {
   check('WebView index.html checks (skipped — file missing)', false, 'Run build-release.sh first')
 }

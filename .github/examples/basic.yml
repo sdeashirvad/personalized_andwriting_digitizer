@@ -1,4 +1,4 @@
-name: API Contract Diff
+name: SpecSentinel
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
       - 'api/**/*.yaml'
 
 jobs:
-  api-contract-diff:
+  specsentinel:
     name: Check API Contract
     runs-on: ubuntu-latest
     permissions:
@@ -25,9 +25,9 @@ jobs:
         run: |
           git show origin/${{ github.base_ref }}:openapi.yaml > /tmp/old-spec.yaml
 
-      - name: Run API Contract Diff
+      - name: Run SpecSentinel
         id: diff
-        uses: ./  # uses action.yml at repo root
+        uses: sdeashirvad/specsentinel@v1
         with:
           old-spec: /tmp/old-spec.yaml
           new-spec: openapi.yaml
@@ -44,5 +44,5 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: api-contract-diff-report
+          name: specsentinel-report
           path: ${{ steps.diff.outputs.report-path }}

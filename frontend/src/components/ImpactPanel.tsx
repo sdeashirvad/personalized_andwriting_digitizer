@@ -1,4 +1,4 @@
-import type { ImpactReport } from '@api-contract-diff/engine'
+import type { ImpactReport } from 'specsentinel'
 import { AlertOctagon, ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 

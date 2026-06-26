@@ -1,5 +1,5 @@
-import type { DiffChange } from '@api-contract-diff/engine'
-import { RULE_MAP } from '@api-contract-diff/engine'
+import type { DiffChange } from 'specsentinel'
+import { RULE_MAP } from 'specsentinel'
 import { SeverityBadge } from './SeverityBadge'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'

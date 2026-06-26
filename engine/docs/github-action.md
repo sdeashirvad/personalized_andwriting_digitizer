@@ -186,7 +186,7 @@ npx ajv validate \
 
 ```bash
 # Install and run the CLI directly
-npm install -g @api-contract-diff/engine
+npm install -g specsentinel
 api-contract-diff old.yaml new.yaml --config specguard.yml
 
 # Simulate the Action locally with act

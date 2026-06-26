@@ -1,7 +1,7 @@
 /**
  * WebViewServer — lightweight Node.js HTTP server for `--webview` mode.
  *
- * Serves the compiled SpecGuard Studio frontend from engine/assets/webview/
+ * Serves the compiled SpecSentinel Studio frontend from engine/assets/webview/
  * and provides the engine-produced ContractDiffReport as /webview-data.json
  * so the browser renders exactly what the engine computed — no re-execution.
  *
@@ -10,7 +10,7 @@
 import { createServer } from 'http'
 import type { AddressInfo } from 'net'
 import { readFileSync, existsSync } from 'fs'
-import { extname, join } from 'path'
+import { extname, join, resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { exec } from 'child_process'
 
@@ -129,7 +129,7 @@ export async function startWebViewServer(opts: WebViewServerOptions): Promise<vo
   const rawIndex = readFileSync(join(assetsDir, 'index.html'), 'utf-8')
   const injectedIndex = rawIndex.replace(
     '</head>',
-    `<script>window.__SPECGUARD_WEBVIEW__=true;</script></head>`
+    `<script>window.__SPECSENTINEL_WEBVIEW__=true;</script></head>`
   )
 
   const dataJson = JSON.stringify(opts.data)
@@ -170,16 +170,19 @@ export async function startWebViewServer(opts: WebViewServerOptions): Promise<vo
     }
 
     // Static assets
-    const filePath = join(assetsDir, pathname)
+    const decodedPathname = decodeURIComponent(pathname)
+    const requestedPath = join(assetsDir, decodedPathname)
+    const resolvedPath = resolve(requestedPath)
+    const resolvedAssetsDir = resolve(assetsDir)
 
     // Security: prevent path traversal
-    if (!filePath.startsWith(assetsDir + '/') && filePath !== assetsDir) {
+    if (!resolvedPath.startsWith(resolvedAssetsDir)) {
       res.writeHead(403, { 'Content-Type': 'text/plain' })
       res.end('Forbidden')
       return
     }
 
-    if (!existsSync(filePath)) {
+    if (!existsSync(resolvedPath)) {
       // SPA fallback — all unknown paths get index.html so React Router works
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' })
       res.end(injectedIndex)
@@ -187,9 +190,9 @@ export async function startWebViewServer(opts: WebViewServerOptions): Promise<vo
     }
 
     try {
-      const ext = extname(filePath)
+      const ext = extname(resolvedPath)
       const mime = MIME[ext] ?? 'application/octet-stream'
-      const content = readFileSync(filePath)
+      const content = readFileSync(resolvedPath)
       res.writeHead(200, {
         'Content-Type': mime,
         'Cache-Control': 'public, max-age=3600, immutable',
@@ -210,7 +213,7 @@ export async function startWebViewServer(opts: WebViewServerOptions): Promise<vo
         [
           '',
           '  ┌─────────────────────────────────────────────────┐',
-          '  │         SpecGuard Studio — Local WebView         │',
+          '  │       SpecSentinel Studio — Local WebView        │',
           '  └─────────────────────────────────────────────────┘',
           '',
           `  Running at:    ${url}`,
@@ -235,7 +238,7 @@ export async function startWebViewServer(opts: WebViewServerOptions): Promise<vo
   // ── Keep alive until signal ──────────────────────────────────────────────────
   await new Promise<void>((resolve) => {
     function shutdown() {
-      process.stdout.write('\n  SpecGuard Studio stopped.\n\n')
+      process.stdout.write('\n  SpecSentinel Studio stopped.\n\n')
       server.close(() => resolve())
     }
     process.once('SIGINT', shutdown)

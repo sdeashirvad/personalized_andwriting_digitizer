@@ -24,7 +24,7 @@ done
 
 echo ""
 echo "  ┌─────────────────────────────────────────────────────┐"
-echo "  │      SpecGuard — Release Build Pipeline              │"
+echo "  │      SpecSentinel — Release Build Pipeline              │"
 echo "  └─────────────────────────────────────────────────────┘"
 echo ""
 
@@ -36,9 +36,9 @@ echo "  ✓  engine/dist/ ready"
 echo ""
 
 # ── Step 2: Build frontend ────────────────────────────────────────────────────
-echo "  [2/4] Building frontend (React + Vite)..."
+echo "  [2/4] Building frontend (Studio-only webview bundle)..."
 cd "$ROOT/frontend"
-npm run build
+npm run build:webview
 echo "  ✓  frontend/dist/ ready"
 echo ""
 

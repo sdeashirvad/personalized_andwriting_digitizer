@@ -15,7 +15,7 @@ export function CLIBuilder() {
   const [copied, setCopied] = useState(false)
 
   const command = useMemo(() => {
-    const parts = ['npx specguard', oldPath, newPath]
+    const parts = ['npx specsentinel', oldPath, newPath]
     if (jsonOutput) parts.push('--json')
     if (outputFile) parts.push(`--output ${outputFile}`)
     if (failOnHigh) parts.push('--fail-on-high')
@@ -42,7 +42,7 @@ export function CLIBuilder() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'run-specguard.sh'
+    a.download = 'run-specsentinel.sh'
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -50,12 +50,12 @@ export function CLIBuilder() {
   }
 
   const examples = [
-    { label: 'Basic diff', cmd: 'npx specguard old.yaml new.yaml', desc: 'Compare two specs and print a human-readable report' },
-    { label: 'JSON output', cmd: 'npx specguard old.yaml new.yaml --json', desc: 'Emit a machine-readable ContractDiffReport to stdout' },
-    { label: 'Save report', cmd: 'npx specguard old.yaml new.yaml --json --output report.json', desc: 'Save the JSON report to a file for CI artifacts' },
-    { label: 'Fail on HIGH', cmd: 'npx specguard old.yaml new.yaml --fail-on-high', desc: 'Exit 2 when HIGH/CRITICAL breaking changes are present' },
-    { label: 'With governance', cmd: 'npx specguard old.yaml new.yaml --config specguard.yml', desc: 'Apply approval and suppression rules from specguard.yml' },
-    { label: 'Full CI pipeline', cmd: 'npx specguard old.yaml new.yaml --json --output report.json --fail-on-high --config specguard.yml', desc: 'Generate JSON report, apply governance, fail on high severity' },
+    { label: 'Basic diff', cmd: 'npx specsentinel old.yaml new.yaml', desc: 'Compare two specs and print a human-readable report' },
+    { label: 'JSON output', cmd: 'npx specsentinel old.yaml new.yaml --json', desc: 'Emit a machine-readable ContractDiffReport to stdout' },
+    { label: 'Save report', cmd: 'npx specsentinel old.yaml new.yaml --json --output report.json', desc: 'Save the JSON report to a file for CI artifacts' },
+    { label: 'Fail on HIGH', cmd: 'npx specsentinel old.yaml new.yaml --fail-on-high', desc: 'Exit 2 when HIGH/CRITICAL breaking changes are present' },
+    { label: 'With governance', cmd: 'npx specsentinel old.yaml new.yaml --config specguard.yml', desc: 'Apply approval and suppression rules from specguard.yml' },
+    { label: 'Full CI pipeline', cmd: 'npx specsentinel old.yaml new.yaml --json --output report.json --fail-on-high --config specguard.yml', desc: 'Generate JSON report, apply governance, fail on high severity' },
   ]
 
   const flags = [
@@ -82,7 +82,7 @@ export function CLIBuilder() {
           CLI Builder
         </h1>
         <p className="text-sm text-zinc-400 dark:text-zinc-500">
-          Build <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-xs">npx specguard</code> commands — configure flags and copy the result into your terminal or CI pipeline
+          Build <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-xs">npx specsentinel</code> commands — configure flags and copy the result into your terminal or CI pipeline
         </p>
       </div>
 

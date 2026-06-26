@@ -7,7 +7,7 @@ import { FileJson, Eye, Code2, BookOpen, Copy, CheckCheck, Download, FlaskConica
 type View = 'rendered' | 'json' | 'schema'
 
 export function ReportExplorer() {
-  const { result, navigateTo } = useStudio()
+  const { result, navigateTo, isWebViewMode } = useStudio()
   const [view, setView] = useState<View>('rendered')
   const [copied, setCopied] = useState(false)
 
@@ -60,7 +60,7 @@ export function ReportExplorer() {
       </div>
 
       {!result ? (
-        <NoReport onNavigate={() => navigateTo('playground')} />
+        <NoReport onNavigate={() => navigateTo(isWebViewMode ? 'report' : 'playground')} />
       ) : (
         <>
           {/* Consistency strip */}

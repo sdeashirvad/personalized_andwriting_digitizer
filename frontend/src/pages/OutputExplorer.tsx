@@ -13,7 +13,7 @@ const FORMATS: { id: OutputFormat; label: string; lang: string; color: string; e
 ]
 
 export function OutputExplorer() {
-  const { result, navigateTo } = useStudio()
+  const { result, navigateTo, isWebViewMode } = useStudio()
   const [active, setActive] = useState<OutputFormat>('console')
   const [copied, setCopied] = useState(false)
 
@@ -78,7 +78,7 @@ export function OutputExplorer() {
       </div>
 
       {!result ? (
-        <NoReport onNavigate={() => navigateTo('playground')} />
+        <NoReport onNavigate={() => navigateTo(isWebViewMode ? 'report' : 'playground')} />
       ) : (
         <>
           {/* Format selector cards */}

@@ -14,12 +14,12 @@ import { loadConfig } from './governance/ConfigLoader.js'
 
 function printHelp(): void {
   console.log(`
-  api-contract-diff  v${TOOL_VERSION}
+  specsentinel  v${TOOL_VERSION}
 
   Detect breaking and non-breaking changes between two OpenAPI / Swagger specs.
 
   Usage:
-    api-contract-diff <old-spec> <new-spec> [options]
+    specsentinel <old-spec> <new-spec> [options]
 
   Arguments:
     <old-spec>    Path to the old OpenAPI spec (.yaml, .yml, or .json)
@@ -31,6 +31,8 @@ function printHelp(): void {
     --output <file>     Write output to a file instead of stdout
     --config <file>     Path to specguard.yml governance config
                         (defaults to ./specguard.yml if it exists)
+    --webview           Open SpecSentinel Studio in the browser with this report
+    --port <n>          Port for --webview local server (default: 4321)
     --fail-on-high      Only exit non-zero for HIGH/CRITICAL breaking changes;
                         MEDIUM/LOW breaking changes produce exit 0
     --fail-on-medium    Exit non-zero for any breaking change (default behaviour)
@@ -50,26 +52,29 @@ function printHelp(): void {
 
   Examples:
     # Human-readable console diff
-    api-contract-diff old.yaml new.yaml
+    specsentinel old.yaml new.yaml
+
+    # Open interactive report in browser (report-only view)
+    specsentinel old.yaml new.yaml --webview
 
     # With governance config
-    api-contract-diff old.yaml new.yaml --config specguard.yml
+    specsentinel old.yaml new.yaml --config specguard.yml
 
     # JSON report to stdout
-    api-contract-diff old.yaml new.yaml --json
+    specsentinel old.yaml new.yaml --json
 
     # JSON report saved to file
-    api-contract-diff old.yaml new.yaml --json --output report.json
+    specsentinel old.yaml new.yaml --json --output report.json
 
     # Markdown report
-    api-contract-diff old.yaml new.yaml --format markdown
+    specsentinel old.yaml new.yaml --format markdown
 
     # CI: only fail pipeline on HIGH/CRITICAL changes
-    api-contract-diff old.yaml new.yaml --fail-on-high
+    specsentinel old.yaml new.yaml --fail-on-high
     if [ $? -eq 2 ]; then echo "BLOCKER: high-severity breaking changes"; fi
 
     # CI: fail pipeline on any breaking change
-    api-contract-diff old.yaml new.yaml --fail-on-medium
+    specsentinel old.yaml new.yaml --fail-on-medium
   `)
 }
 

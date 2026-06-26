@@ -46,7 +46,7 @@ See [`github-action-design.md`](./github-action-design.md) for the full design d
 
 ## Phase 5 — Ecosystem (Planned)
 
-- [ ] Published npm package `@api-contract-diff/engine`
+- [ ] Published npm package `specsentinel`
 - [ ] VS Code extension for inline contract diffing
 - [ ] Swagger UI plugin
 - [ ] CI/CD integrations: GitLab CI, Bitbucket Pipelines, CircleCI

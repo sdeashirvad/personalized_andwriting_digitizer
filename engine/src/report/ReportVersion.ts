@@ -1,7 +1,7 @@
 export const REPORT_VERSION = '1.0' as const
 export type ReportVersionString = typeof REPORT_VERSION
 
-export const TOOL_VERSION = '1.1.0' as const
+export const TOOL_VERSION = '1.0.0' as const
 
 /**
  * Schema compatibility table.

@@ -1,4 +1,4 @@
-name: API Contract Diff (Governed)
+name: SpecSentinel (Governed)
 
 # Governed mode: uses specguard.yml to track approved breaking changes.
 # Breaking changes that are approved pass CI. Unapproved ones fail it.
@@ -11,7 +11,7 @@ on:
       - 'specguard.yml'   # also re-run when governance rules change
 
 jobs:
-  api-contract-diff:
+  specsentinel:
     name: Governed API Contract Check
     runs-on: ubuntu-latest
     permissions:
@@ -28,9 +28,9 @@ jobs:
         run: |
           git show origin/${{ github.base_ref }}:specs/openapi.yaml > /tmp/old-spec.yaml
 
-      - name: Run API Contract Diff with governance
+      - name: Run SpecSentinel with governance
         id: diff
-        uses: ./
+        uses: sdeashirvad/specsentinel@v1
         with:
           old-spec: /tmp/old-spec.yaml
           new-spec: specs/openapi.yaml

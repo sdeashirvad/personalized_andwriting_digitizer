@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createContext, useState, useCallback, useEffect } from 'react'
 import { runDiff, reconstructFromReport } from '../engine/adapter'
 import type { RunDiffResult, SpecGuardConfig, ContractDiffReport } from '../engine/adapter'
 import { SCENARIOS } from '../data/samples'
@@ -35,15 +35,20 @@ interface StudioContextValue {
   error: string | null
   activeTab: TabId
   navigateTo: (tab: TabId) => void
+  isWebViewEnv: boolean
   isWebViewMode: boolean
+  isWebViewLoading: boolean
   webViewMeta: WebViewMeta | null
 }
 
 export const StudioContext = createContext<StudioContextValue | null>(null)
 
 export function StudioProvider({ children }: { children: React.ReactNode }) {
+  const isWebViewEnv =
+    typeof window !== 'undefined' && !!(window as Window & { __SPECSENTINEL_WEBVIEW__?: boolean }).__SPECSENTINEL_WEBVIEW__
   const defaultScenario = SCENARIOS[1]!
   const [result, setResult] = useState<RunDiffResult | null>(() => {
+    if (isWebViewEnv) return null
     try {
       return runDiff({
         oldContract: defaultScenario.oldContract,
@@ -54,13 +59,16 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
       return null
     }
   })
-  const [oldContractText, setOldContractText] = useState(defaultScenario.oldContract)
-  const [newContractText, setNewContractText] = useState(defaultScenario.newContract)
-  const [governanceConfig, setGovernanceConfig] = useState<SpecGuardConfig | undefined>(defaultScenario.governanceConfig)
+  const [oldContractText, setOldContractText] = useState(isWebViewEnv ? '' : defaultScenario.oldContract)
+  const [newContractText, setNewContractText] = useState(isWebViewEnv ? '' : defaultScenario.newContract)
+  const [governanceConfig, setGovernanceConfig] = useState<SpecGuardConfig | undefined>(
+    isWebViewEnv ? undefined : defaultScenario.governanceConfig
+  )
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<TabId>('playground')
+  const [activeTab, setActiveTab] = useState<TabId>(isWebViewEnv ? 'report' : 'playground')
   const [isWebViewMode, setIsWebViewMode] = useState(false)
   const [webViewMeta, setWebViewMeta] = useState<WebViewMeta | null>(null)
+  const isWebViewLoading = isWebViewEnv && result === null
 
   const navigateTo = useCallback((tab: TabId) => {
     setActiveTab(tab)
@@ -83,7 +91,7 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
 
   // ── WebView mode: receive engine-produced ContractDiffReport from the server ─
   useEffect(() => {
-    if (!(window as any).__SPECGUARD_WEBVIEW__) return
+    if (!(window as Window & { __SPECSENTINEL_WEBVIEW__?: boolean }).__SPECSENTINEL_WEBVIEW__) return
 
     fetch('/webview-data.json')
       .then(r => {
@@ -99,9 +107,10 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
         if (data.newContract) setNewContractText(data.newContract)
         setIsWebViewMode(true)
         setWebViewMeta(data.meta)
+        setActiveTab('report')
       })
       .catch((err) => {
-        console.warn('[SpecGuard WebView] Failed to load webview-data.json:', err)
+        console.warn('[SpecSentinel WebView] Failed to load webview-data.json:', err)
       })
   }, [])
 
@@ -115,7 +124,9 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
       error,
       activeTab,
       navigateTo,
+      isWebViewEnv,
       isWebViewMode,
+      isWebViewLoading,
       webViewMeta,
     }}>
       {children}

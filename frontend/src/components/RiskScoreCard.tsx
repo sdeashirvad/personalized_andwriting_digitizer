@@ -1,4 +1,4 @@
-import type { RiskScore } from '@api-contract-diff/engine'
+import type { RiskScore } from 'specsentinel'
 
 interface Props {
   riskScore: RiskScore

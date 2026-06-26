@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useStudio } from '../context/useStudio'
 import { runDiff } from '../engine/adapter'
 import type { SpecGuardConfig, RunDiffResult } from '../engine/adapter'
@@ -71,9 +71,15 @@ const GOV_STATUS_STYLES: Record<string, string> = {
 
 export function GovernanceLab() {
   const studio = useStudio()
-  const { oldContractText, newContractText, result: globalResult } = studio
+  const { oldContractText, newContractText, result: globalResult, isWebViewMode } = studio
   const [configYaml, setConfigYaml] = useState(EXAMPLES[0]!.yaml)
   const [result, setResult] = useState<RunDiffResult | null>(globalResult)
+
+  useEffect(() => {
+    if (isWebViewMode && globalResult) {
+      setResult(globalResult)
+    }
+  }, [isWebViewMode, globalResult])
   const [error, setError] = useState<string | null>(null)
   const [parseError, setParseError] = useState<string | null>(null)
   const [isRunning, setIsRunning] = useState(false)
@@ -160,7 +166,7 @@ export function GovernanceLab() {
       </div>
 
       {noContracts ? (
-        <NoContractsState onNavigate={() => studio.navigateTo('playground')} />
+        <NoContractsState onNavigate={() => studio.navigateTo(isWebViewMode ? 'report' : 'playground')} />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left: YAML editor */}

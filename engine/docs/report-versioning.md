@@ -1,7 +1,7 @@
 # Report Versioning Strategy
 
 This document describes how `ContractDiffReport` schema versions are managed
-across releases of `@api-contract-diff/engine`.
+across releases of `specsentinel`.
 
 ---
 
@@ -56,7 +56,7 @@ If the version is unknown, consumers SHOULD surface a warning and attempt
 best-effort parsing rather than hard-failing.
 
 ```typescript
-import { isVersionSupported } from '@api-contract-diff/engine'
+import { isVersionSupported } from 'specsentinel'
 
 if (!isVersionSupported(report.reportVersion)) {
   console.warn(`Unknown report version: ${report.reportVersion}. Proceeding with best-effort.`)
@@ -71,7 +71,7 @@ When `reportVersion` is bumped:
 
 1. The engine exports a migration helper:
    ```typescript
-   import { migrateReport } from '@api-contract-diff/engine'
+   import { migrateReport } from 'specsentinel'
    const v2Report = migrateReport(v1Report) // upgrades schema in-place
    ```
 

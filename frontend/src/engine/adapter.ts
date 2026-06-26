@@ -9,7 +9,7 @@ import {
   generatePRComment,
   determineExitCode,
   ExitCode,
-} from '@api-contract-diff/engine'
+} from 'specsentinel'
 import type {
   OpenAPIContract,
   ContractDiffReport,
@@ -20,8 +20,8 @@ import type {
   SpecGuardConfig,
   PRCommentMode,
   ExitCodeValue,
-} from '@api-contract-diff/engine'
-import { TOOL_VERSION } from '@api-contract-diff/engine'
+} from 'specsentinel'
+import { TOOL_VERSION } from 'specsentinel'
 
 export type { ContractDiffReport, RiskScore, ImpactReport, RiskBreakdownItem, SpecGuardConfig, PRCommentMode, ExitCodeValue }
 export { toMarkdownReport, toConsoleReport, generatePRComment, determineExitCode, ExitCode }

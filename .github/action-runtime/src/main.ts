@@ -14,8 +14,8 @@ import {
   toConsoleReport,
   toJSONReport,
   ExitCode,
-} from '@api-contract-diff/engine'
-import type { SpecGuardConfig, ContractDiffReport } from '@api-contract-diff/engine'
+} from 'specsentinel'
+import type { SpecGuardConfig, ContractDiffReport } from 'specsentinel'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 

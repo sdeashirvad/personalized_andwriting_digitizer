@@ -1,8 +1,31 @@
 {
-  "name": "@api-contract-diff/engine",
-  "version": "1.1.0",
+  "name": "specsentinel",
+  "version": "1.0.0",
   "type": "module",
-  "description": "API Contract Diff engine — detects breaking and non-breaking changes between OpenAPI specs",
+  "description": "SpecSentinel — detect breaking and non-breaking changes between OpenAPI specs",
+  "license": "MIT",
+  "homepage": "https://labs.sdeashirvad.com/specsentinel",
+  "author": "Ashirvad Kumar Pandey (https://sdeashirvad.com)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sdeashirvad/specsentinel.git",
+    "directory": "engine"
+  },
+  "bugs": {
+    "url": "https://github.com/sdeashirvad/specsentinel/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "openapi",
+    "swagger",
+    "api",
+    "contract",
+    "diff",
+    "breaking-changes",
+    "spec"
+  ],
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,7 +36,7 @@
     }
   },
   "bin": {
-    "specguard": "./dist/cli.js"
+    "specsentinel": "./dist/cli.js"
   },
   "files": [
     "dist/**/*",
@@ -24,10 +47,13 @@
     "build": "tsc -p tsconfig.build.json",
     "cli": "tsx src/cli.ts",
     "cli:webview": "tsx src/cli.ts --webview",
-    "test:node": "tsx --test tests/*.test.ts"
+    "test:node": "tsx --test tests/*.test.ts",
+    "validate": "tsx ../scripts/validate-package.ts",
+    "prepublishOnly": "npm run build && npm run validate"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "specsentinel": "^1.0.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",

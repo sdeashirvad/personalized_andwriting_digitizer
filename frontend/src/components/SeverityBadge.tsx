@@ -1,4 +1,4 @@
-import type { Severity } from '@api-contract-diff/engine'
+import type { Severity } from 'specsentinel'
 
 interface Props {
   severity: Severity

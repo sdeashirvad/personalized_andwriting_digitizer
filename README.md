@@ -1,7 +1,10 @@
-# SpecGuard
+# SpecSentinel
 
 > Detect breaking and non-breaking changes between OpenAPI/Swagger API versions — instantly.
 
+A product of **[SdeAshirvad Labs](https://labs.sdeashirvad.com/)** · Built by [Ashirvad Kumar Pandey](https://sdeashirvad.com/)
+
+[![npm](https://img.shields.io/npm/v/specsentinel)](https://www.npmjs.com/package/specsentinel)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-blue)](https://react.dev/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0-green)](https://www.openapis.org/)
@@ -26,8 +29,8 @@ Undetected API breaking changes are one of the most common causes of production 
 - **Breaking / non-breaking classification** — at a glance
 - **YAML and JSON input** — supports OpenAPI 3.0 specs
 - **CLI** — pipe it into CI, pre-push hooks, or release scripts
-- **`--webview`** — launch SpecGuard Studio locally in the browser with one flag
-- **SpecGuard Studio** — 8-tab interactive dashboard; runs fully client-side (zero backend)
+- **`--webview`** — launch SpecSentinel Studio locally in the browser with one flag
+- **Marketing landing page** — product overview at `/`; interactive **Studio** at `/studio`
 - **Governance** — approve, suppress, and expire findings with `specguard.yml`
 - **JSON, Markdown, HTML, and console output** — all from the same `ContractDiffReport`
 
@@ -45,11 +48,11 @@ Undetected API breaking changes are one of the most common causes of production 
     /webview/              — local HTTP server for --webview mode (Node.js built-ins only)
     /github-action/        — PR comment renderer, exit code docs
     index.ts               — public API exports
-    cli.ts                 — CLI entry point (bin: specguard)
+    cli.ts                 — CLI entry point (bin: specsentinel)
   /assets/webview/         — compiled React frontend (populated by build-release.sh)
   /tests/                  — test suite (Node built-in test runner)
 
-/frontend                  — SpecGuard Studio (React 19 + Vite + Tailwind CSS 4)
+/frontend                  — SpecSentinel Studio (React 19 + Vite + Tailwind CSS 4)
   /src
     /engine/adapter.ts     — adapter layer (local engine, future global package)
     /context/StudioContext — shared RunDiffResult + WebView detection across all tabs
@@ -64,35 +67,32 @@ Undetected API breaking changes are one of the most common causes of production 
 
 ## WebView Mode
 
-`--webview` launches SpecGuard Studio — the full 8-tab interactive dashboard — in your browser, pre-loaded with the diff results of your two contracts. No manual uploads required.
+`--webview` launches SpecSentinel Studio in your browser with a **report-only view** pre-loaded from your CLI run. No sample scenarios or playground input — only the report tabs for the specs you passed.
 
 ```bash
 # Basic — analyze and open Studio in browser
-npx specguard old.yaml new.yaml --webview
+npx specsentinel old.yaml new.yaml --webview
 
 # With governance config
-npx specguard old.yaml new.yaml --webview --config specguard.yml
+npx specsentinel old.yaml new.yaml --webview --config specguard.yml
 
 # Custom port
-npx specguard old.yaml new.yaml --webview --port 3000
+npx specsentinel old.yaml new.yaml --webview --port 3000
 ```
 
 **What happens:**
-1. SpecGuard parses and diffs both contracts
+1. SpecSentinel parses and diffs both contracts
 2. Prints a console summary
 3. Starts a local HTTP server (default port 4321)
 4. Opens your browser automatically
-5. Studio loads with all 8 tabs populated and ready
+5. Studio opens on **Report Explorer** with report-focused tabs only
 
-**All Studio tabs work in WebView mode:**
-- Contract Playground — diff view, contract text, scenario picker
+**WebView tabs (report-only):**
 - Report Explorer — full `ContractDiffReport` in rendered/JSON/schema views
-- Governance Lab — edit `specguard.yml` live and re-apply
+- Output Explorer — console, JSON, Markdown, HTML output
+- Governance Lab — governance panel for the loaded report
 - GitHub Action — CI/CD config preview with exit codes
 - PR Comment — rendered Markdown preview
-- CLI Builder — build and copy CLI commands
-- Output Explorer — console, JSON, Markdown, HTML output
-- Architecture — system design overview
 
 **WebView banner:** A slim banner at the top of Studio shows the source files, engine version, risk level, and timestamp. It can be dismissed.
 
@@ -227,7 +227,7 @@ When `'local'`, the TypeScript diff engine is bundled directly into the frontend
 
 To switch to a future globally-published package:
 1. Change `ENGINE_MODE` to `'global'`
-2. Install: `npm install @api-contract-diff/engine`
+2. Install: `npm install specsentinel`
 3. Implement `globalDiff` in adapter.ts using the package
 
 The adapter interface (`RunDiffOptions` → `RunDiffResult`) is identical for both modes.
@@ -263,7 +263,7 @@ The adapter interface (`RunDiffOptions` → `RunDiffResult`) is identical for bo
 
 ## Future Roadmap
 
-- [ ] Publish engine as `@api-contract-diff/engine` on npm
+- [ ] Publish `specsentinel` on npm
 - [ ] `$ref` deep resolution across components
 - [ ] `allOf` / `oneOf` / `anyOf` schema merging
 - [ ] GitHub Actions integration example

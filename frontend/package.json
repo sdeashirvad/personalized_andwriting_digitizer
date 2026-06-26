@@ -6,11 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:webview": "tsc -b && vite build --mode webview",
     "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@api-contract-diff/engine": "file:../engine/api-contract-diff-engine-1.1.0.tgz",
     "@tailwindcss/vite": "^4.3.1",
     "@tanstack/react-query": "^5.101.1",
     "@types/js-yaml": "^4.0.9",
@@ -20,6 +20,7 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.0",
+    "specsentinel": "^1.0.0",
     "tailwindcss": "^4.3.1"
   },
   "devDependencies": {

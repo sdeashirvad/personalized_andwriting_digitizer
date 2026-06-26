@@ -1,6 +1,6 @@
 import { Shield, CheckCircle2, AlertTriangle, EyeOff, XCircle, ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
-import type { ContractDiffReport, DiffChange, GovernanceSummary } from '@api-contract-diff/engine'
+import type { ContractDiffReport, DiffChange, GovernanceSummary } from 'specsentinel'
 
 interface GovernancePanelProps {
   report: ContractDiffReport

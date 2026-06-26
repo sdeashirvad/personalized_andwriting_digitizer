@@ -21,7 +21,7 @@ const EXIT_COLORS: Record<number, string> = {
 }
 
 export function GitHubActionPlayground() {
-  const { result, navigateTo } = useStudio()
+  const { result, navigateTo, isWebViewMode } = useStudio()
   const [failOnHigh, setFailOnHigh] = useState(true)
   const [failOnMedium, setFailOnMedium] = useState(false)
   const [commentMode, setCommentMode] = useState<PRCommentMode>('summary')
@@ -35,7 +35,7 @@ export function GitHubActionPlayground() {
 
   const willFail = exitCode !== null && exitCode !== ExitCode.OK
 
-  const workflowYaml = `name: API Contract Check
+  const workflowYaml = `name: SpecSentinel
 
 on:
   pull_request:
@@ -44,20 +44,20 @@ on:
       - 'api/**/*.json'
 
 jobs:
-  specguard:
+  specsentinel:
     runs-on: ubuntu-latest
-    name: SpecGuard — Contract Diff
+    name: SpecSentinel — API Contract Check
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Run SpecGuard
-        uses: your-org/specguard-action@v1
+      - name: Run SpecSentinel
+        uses: sdeashirvad/specsentinel@v1
         with:
-          old-contract: api/v1/openapi.yaml
-          new-contract: api/v2/openapi.yaml${configPath ? `\n          config-path: ${configPath}` : ''}
+          old-spec: api/v1/openapi.yaml
+          new-spec: api/v2/openapi.yaml${configPath ? `\n          config-path: ${configPath}` : ''}
           comment-mode: ${commentMode}${failOnHigh ? '\n          fail-on-high: true' : ''}${failOnMedium ? '\n          fail-on-medium: true' : ''}`.trim()
 
   const markdownSummary = useMemo(() => {
@@ -90,7 +90,7 @@ jobs:
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'specguard-summary.md'
+    a.download = 'specsentinel-summary.md'
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -105,11 +105,11 @@ jobs:
           GitHub Action Playground
         </h1>
         <p className="text-sm text-zinc-400 dark:text-zinc-500">
-          Configure the SpecGuard GitHub Action and preview expected behavior — exit codes, PR comments, and CI outcomes
+          Configure the SpecSentinel GitHub Action and preview expected behavior — exit codes, PR comments, and CI outcomes
         </p>
       </div>
 
-      {!result && <NoReport onNavigate={() => navigateTo('playground')} />}
+      {!result && <NoReport onNavigate={() => navigateTo(isWebViewMode ? 'report' : 'playground')} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Config panel */}

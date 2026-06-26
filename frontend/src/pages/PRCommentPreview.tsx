@@ -5,7 +5,7 @@ import type { PRCommentMode } from '../engine/adapter'
 import { MessageSquare, Eye, Code2, Copy, CheckCheck, Download, FlaskConical } from 'lucide-react'
 
 export function PRCommentPreview() {
-  const { result, navigateTo } = useStudio()
+  const { result, navigateTo, isWebViewMode } = useStudio()
   const [mode, setMode] = useState<PRCommentMode>('summary')
   const [view, setView] = useState<'rendered' | 'raw'>('rendered')
   const [copied, setCopied] = useState(false)
@@ -69,7 +69,7 @@ export function PRCommentPreview() {
       </div>
 
       {!result ? (
-        <NoReport onNavigate={() => navigateTo('playground')} />
+        <NoReport onNavigate={() => navigateTo(isWebViewMode ? 'report' : 'playground')} />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Controls */}
